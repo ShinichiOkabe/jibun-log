@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f5c4d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="体調管理">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>体調管理 | じぶんログ</title>
+</head>
+<body>
+<style>
+/* layout: one narrow column for a phone; sticky header with three tabs; cards for each chart */
+:root{--bg:#f3f6f4;--card:#fff;--ink:#1c2a26;--sub:#5a6b65;--line:#d5dedA;--brand:#1f5c4d;--accent:#2b7a66;--soft:#e7efec;--warn:#b42318;--hi:#b4530f;--lo:#1d5fa8;--note:#fff6d6;--noteink:#5a4500}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#111816;--card:#1a2421;--ink:#e4ece9;--sub:#9bb0a9;--line:#2f3d39;--brand:#17483c;--accent:#58b79e;--soft:#22302c;--warn:#ff8a7a;--hi:#f0a060;--lo:#7db4ee;--note:#3a3214;--noteink:#f1dc93}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#111816;--card:#1a2421;--ink:#e4ece9;--sub:#9bb0a9;--line:#2f3d39;--brand:#17483c;--accent:#58b79e;--soft:#22302c;--warn:#ff8a7a;--hi:#f0a060;--lo:#7db4ee;--note:#3a3214;--noteink:#f1dc93}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 "Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo UI",Meiryo,sans-serif}
+header{background:var(--brand);color:#fff;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+header h1{font-size:17px;margin:0;padding:10px 16px 2px;display:flex;align-items:baseline;gap:10px}
+header h1 small{font-size:11px;font-weight:normal;opacity:.8}
+nav{display:flex;padding:0 8px}
+nav button{flex:1;background:none;border:0;color:#fff;opacity:.75;padding:9px 6px;font:inherit;cursor:pointer;border-bottom:3px solid transparent}
+nav button.on{opacity:1;border-bottom-color:#fff;font-weight:bold}
+main{padding-block:14px 40px;padding-inline:16px;max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h2{font-size:15px;margin:6px 0 0;color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.bar .sp{flex:1}
+input,select,button,textarea{font:inherit;color:inherit}
+input,select,textarea{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;max-width:100%}
+button{cursor:pointer}
+button.b{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:10px 16px;font-weight:bold}
+:root[data-theme="dark"] button.b{color:#0c1512}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.b{color:#0c1512}}
+button.g{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:9px 12px}
+button.d{background:none;border:1px solid var(--warn);color:var(--warn);border-radius:8px;padding:9px 12px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.muted{color:var(--sub)}.note{font-size:12.5px;color:var(--sub)}
+.warnbox{background:var(--note);color:var(--noteink);border-radius:10px;padding:10px 12px;font-size:13.5px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.tile .l{font-size:12px;color:var(--sub)}.tile .v{font-size:20px;font-weight:bold;font-variant-numeric:tabular-nums}.tile .v small{font-size:12px;font-weight:normal;color:var(--sub)}.tile .s{font-size:11.5px;color:var(--sub)}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+table{border-collapse:collapse;width:100%}
+th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+th{background:var(--soft);font-size:12px}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr.click{cursor:pointer}
+.up{color:var(--hi)}.dn{color:var(--lo)}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:12px}
+.hc{width:100%;height:auto;display:block}.hc text{fill:var(--sub);font-size:11px}.hc text.v{fill:var(--ink);font-weight:bold}.hc line.g{stroke:var(--line)}.hc .ln{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round}.hc circle{fill:var(--accent)}
+.empty{text-align:center;padding:28px 12px}
+dialog{border:1px solid var(--line);border-radius:12px;padding:0;width:min(460px,94vw);max-height:92vh;background:var(--card);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog form{display:flex;flex-direction:column;max-height:92vh}
+dialog .hd{padding:12px 16px;border-bottom:1px solid var(--line);font-weight:bold}
+dialog .bd{padding:12px 16px;overflow:auto;white-space:pre-wrap}
+dialog .ft{padding:10px 16px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;white-space:normal}
+.grid label{display:flex;flex-direction:column;font-size:12.5px;color:var(--sub);gap:3px;min-width:0}
+.grid label.wide{grid-column:1/-1}
+.grid input,.grid select{width:100%;font-size:16px;color:var(--ink)}
+textarea{width:100%}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1c2a26;color:#fff;padding:8px 16px;border-radius:20px;z-index:9}
+header h1 a.home{color:#fff;text-decoration:none;font-size:22px;line-height:1;margin-right:-4px}
+.support{text-align:center;padding:4px 0 8px}
+a.pp{display:inline-flex;align-items:center;gap:8px;background:#ffc439;color:#111;text-decoration:none;font-weight:bold;border-radius:24px;padding:10px 22px}
+a.pp:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+footer{max-width:860px;margin:0 auto;padding:0 16px calc(24px + env(safe-area-inset-bottom,0px));text-align:center;font-size:12.5px;color:var(--sub)}
+footer a{color:var(--accent)}
+</style>
+
+<header><h1>体調管理 <small>データはこのスマートフォンの中だけに保存されます</small></h1><nav id="nav"></nav></header>
+<main id="main"></main>
+<dialog id="dlg"></dialog>
+<dialog id="dlg2"></dialog>
+<footer id="foot"></footer>
+<div id="toast" hidden></div>
+<input type="file" id="file" accept=".json,application/json" hidden>
+<script>
+"use strict";
+const KEY='taicho-kanri-v1';
+// ▼ PayPal のリンク（例：https://www.paypal.com/paypalme/あなたのID ）。ここを書き換えると、設定タブと画面下にボタンが出ます。
+const PAYPAL_URL='https://paypal.me/marathonBGM';
+const TABS=[['list','記録'],['graph','グラフ'],['set','設定']];
+const HM=[['sys','上の血圧','mmHg',0],['dia','下の血圧','mmHg',0],['pulse','脈拍','回/分',0],['temp','体温','℃',1],['wt','体重','kg',1]];
+let S={recs:[],slots:['朝','昼','夜'],lastBackup:''},tab='list',ui={hs:null,hm:''},canStore=true;
+function load(){try{const o=JSON.parse(localStorage.getItem(KEY));if(o&&Array.isArray(o.recs))S=Object.assign(S,o)}catch(e){canStore=false}
+  try{const k='__t';localStorage.setItem(k,'1');localStorage.removeItem(k)}catch(e){canStore=false}
+  if(!Array.isArray(S.slots)||!S.slots.length)S.slots=['朝','昼','夜'];
+  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{})}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));canStore=true}catch(e){canStore=false;toast('この端末に保存できませんでした')}}
+const $=s=>document.querySelector(s);
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+function today(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+const fd=s=>s?s.replace(/-/g,'/'):'';
+const dow=s=>s?'日月火水木金土'[new Date(s+'T00:00:00').getDay()]:'';
+const days=(a,b)=>Math.round((new Date(a+'T00:00:00')-new Date(b+'T00:00:00'))/864e5);
+const hNum=(h,k)=>typeof h[k]==='number'&&isFinite(h[k]);
+const hAvg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+const hMl=mo=>+mo.slice(0,4)+'年'+(+mo.slice(5,7))+'月';
+function sorted(){const o=S.slots;return S.recs.map((h,i)=>[h,i]).sort((a,b)=>(b[0].d||'')<(a[0].d||'')?-1:(b[0].d||'')>(a[0].d||'')?1:(o.indexOf(b[0].slot)-o.indexOf(a[0].slot))||b[1]-a[1])}
+const inMonth=(mo,k)=>S.recs.filter(h=>h.d&&h.d.startsWith(mo)&&hNum(h,k));
+function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2000)}
+function modal(msg,kind){return new Promise(res=>{const d=$('#dlg2');d.innerHTML='<form method="dialog"><div class="bd">'+esc(msg)+'</div><div class="ft"><span style="flex:1"></span>'+(kind==='tell'?'':'<button type="button" class="g" id="m2no">キャンセル</button>')+'<button type="submit" class="b">OK</button></div></form>';let done=false;const fin=v=>{if(done)return;done=true;if(d.open)d.close();res(v)};d.querySelector('form').onsubmit=e=>{e.preventDefault();fin(true)};const no=$('#m2no');if(no)no.onclick=()=>fin(false);d.oncancel=()=>fin(false);d.showModal()})}
+const ask=m=>modal(m,'ask'),tell=m=>modal(m,'tell');
+async function dl(name,data,after){const type=/\.csv$/.test(name)?'text/csv':'application/json';
+  try{const f=new File([data],name,{type});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:name});if(after)after();toast('保存しました');return}catch(e){if(e&&e.name==='AbortError')return}}
+    const u=URL.createObjectURL(f),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);if(after)after();toast('保存しました')}
+  catch(e){showText(name,data)}}
+function showText(name,data){const d=$('#dlg');d.innerHTML='<form method="dialog"><div class="hd">'+esc(name)+'</div><div class="bd" style="white-space:normal"><p class="note" style="margin-top:0">この画面ではファイルとして保存できませんでした。下の文字をすべてコピーして、メモなどに貼り付けて保管してください。</p><textarea id="txt" rows="10" readonly></textarea></div><div class="ft"><button type="button" class="g" id="cp">すべてコピー</button><span style="flex:1"></span><button type="submit" class="b">閉じる</button></div></form>';$('#txt').value=data;$('#cp').onclick=async()=>{try{await navigator.clipboard.writeText(data);toast('コピーしました')}catch(e){$('#txt').select()}};d.showModal()}
+// ---------- chart ----------
+function hLine(lbl,vals,dec){const pts=vals.map((v,i)=>[i,v]).filter(p=>p[1]!=null);if(!pts.length)return '<div class="muted" style="padding:18px 4px">この月・時間の記録はまだありません</div>';
+  const W=440,H=250,l=44,r=14,t=20,b=28,n=vals.length;let lo=Math.min(...pts.map(p=>p[1])),hi=Math.max(...pts.map(p=>p[1]));if(hi-lo<1e-9){lo-=1;hi+=1}const pd=(hi-lo)*.15;lo-=pd;hi+=pd;
+  const X=i=>l+(n>1?i*(W-l-r)/(n-1):(W-l-r)/2),Y=v=>t+(hi-v)*(H-t-b)/(hi-lo);
+  let s='<svg class="hc" viewBox="0 0 '+W+' '+H+'" role="img">';
+  for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4,y=Y(v);s+='<line class="g" x1="'+l+'" x2="'+(W-r)+'" y1="'+y+'" y2="'+y+'"/><text x="'+(l-6)+'" y="'+(y+4)+'" text-anchor="end">'+v.toFixed(1)+'</text>'}
+  const step=Math.ceil(n/8);lbl.forEach((x,i)=>{if(i%step===0)s+='<text x="'+X(i)+'" y="'+(H-10)+'" text-anchor="middle">'+esc(x)+'</text>'});
+  s+='<polyline class="ln" points="'+pts.map(p=>X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1)).join(' ')+'"/>';
+  for(const p of pts){s+='<circle cx="'+X(p[0]).toFixed(1)+'" cy="'+Y(p[1]).toFixed(1)+'" r="3.5"><title>'+esc(lbl[p[0]]+'：'+p[1].toFixed(dec))+'</title></circle>';if(pts.length<=10)s+='<text class="v" x="'+X(p[0]).toFixed(1)+'" y="'+(Y(p[1])-8).toFixed(1)+'" text-anchor="middle">'+p[1].toFixed(dec)+'</text>'}
+  return s+'</svg>'}
+// ---------- views ----------
+function backupNote(){if(!canStore)return '<div class="warnbox">この画面ではデータを端末に保存できません（プライベートブラウズなど）。入力しても、閉じると消えます。</div>';
+  if(!S.recs.length)return '';const n=S.lastBackup?days(today(),S.lastBackup):null;
+  if(n==null)return '<div class="warnbox">まだバックアップを保存していません。機種変更や故障に備えて、「設定」タブから保存してください。</div>';
+  return n>=30?'<div class="warnbox">最後のバックアップから '+n+' 日たちました。「設定」タブから保存してください。</div>':''}
+function vList(){const rows=sorted();
+  return backupNote()+'<div class="bar"><span class="muted">'+S.recs.length+' 件</span><span class="sp"></span><button class="b" id="add">＋ 記録する</button></div>'+
+  (rows.length?'<div class="tw"><table><thead><tr><th>日付</th><th>時間</th>'+HM.map(m=>'<th class="r">'+m[1]+'<br><span class="muted">'+m[2]+'</span></th>').join('')+'</tr></thead><tbody>'+rows.map(([h,i])=>'<tr class="click" data-rec="'+i+'"><td>'+fd(h.d).slice(2)+'（'+dow(h.d)+'）</td><td>'+esc(h.slot)+'</td>'+HM.map(m=>'<td class="r">'+(hNum(h,m[0])?h[m[0]].toFixed(m[3]):'')+'</td>').join('')+'</tr>').join('')+'</tbody></table></div><div class="note">新しい記録が上に並びます。行を押すと直したり消したりできます。</div>'
+   :'<div class="card empty"><p><b>まだ記録がありません</b></p><p class="muted">「＋ 記録する」を押して、日付・時間（朝・昼・夜）と、<br>血圧・脈拍・体温・体重のうち測ったものを入れてください。</p><button class="b" id="add2">＋ 記録する</button></div>')}
+function vGraph(){const cur=today().slice(0,7),mos=[...new Set(S.recs.map(h=>(h.d||'').slice(0,7)).filter(Boolean).concat(cur))].sort().reverse();
+  if(!mos.includes(ui.hm))ui.hm=mos.find(k=>S.recs.some(h=>(h.d||'').startsWith(k)))||cur;
+  const slots=[...new Set(S.slots.concat(S.recs.map(h=>h.slot).filter(Boolean)))];
+  if(ui.hs==null||(ui.hs&&!slots.includes(ui.hs)))ui.hs=slots[0]||'';
+  const mo=ui.hm,srt=sorted(),inS=h=>!ui.hs||h.slot===ui.hs,nd=new Date(+mo.slice(0,4),+mo.slice(5,7),0).getDate(),who=hMl(mo)+'・'+(ui.hs||'すべての時間');
+  const tiles='<div class="tiles">'+HM.map(m=>{const x=srt.find(([h])=>hNum(h,m[0]));return '<div class="tile"><div class="l">最新の'+m[1]+'</div><div class="v">'+(x?x[0][m[0]].toFixed(m[3])+' <small>'+m[2]+'</small>':'－')+'</div><div class="s">'+(x?fd(x[0].d).slice(5)+' '+esc(x[0].slot||''):'&nbsp;')+'</div></div>'}).join('')+'</div>';
+  const ctl='<div class="bar"><label>時間 <select id="hs"><option value="">すべて（1日の平均）</option>'+slots.map(o=>'<option'+(o===ui.hs?' selected':'')+'>'+esc(o)+'</option>').join('')+'</select></label><label>月 <select id="hm">'+mos.map(k=>'<option value="'+k+'"'+(k===mo?' selected':'')+'>'+hMl(k)+'</option>').join('')+'</select></label></div>';
+  const charts='<div class="hgrid">'+HM.map(m=>{const a=inMonth(mo,m[0]).filter(inS),lbl=[],vals=[];
+    for(let d=1;d<=nd;d++){lbl.push(d+'日');vals.push(hAvg(a.filter(h=>+h.d.slice(8,10)===d).map(h=>h[m[0]])))}
+    return '<div class="card"><b>'+m[1]+'の月間推移</b> <span class="muted">'+m[2]+(a.length?'　平均 '+hAvg(a.map(h=>h[m[0]])).toFixed(1)+'（'+a.length+'回）':'')+'</span><div style="margin-top:6px">'+hLine(lbl,vals,m[3])+'</div></div>'}).join('')+'</div>';
+  const mm='<h2>最高値・最低値（'+esc(who)+'）</h2><div class="tw"><table><thead><tr><th>項目</th><th class="r">最高値</th><th>測定日</th><th class="r">最低値</th><th>測定日</th><th class="r">平均</th></tr></thead><tbody>'+HM.map(m=>{const a=inMonth(mo,m[0]).filter(inS);if(!a.length)return '<tr><td>'+m[1]+'</td><td colspan="5" class="muted">記録なし</td></tr>';
+    const hi=a.reduce((x,y)=>y[m[0]]>x[m[0]]?y:x),lo=a.reduce((x,y)=>y[m[0]]<x[m[0]]?y:x),w=h=>fd(h.d).slice(5)+' '+esc(h.slot||'');
+    return '<tr><td>'+m[1]+' <span class="muted">'+m[2]+'</span></td><td class="r up"><b>'+hi[m[0]].toFixed(m[3])+'</b></td><td>'+w(hi)+'</td><td class="r dn"><b>'+lo[m[0]].toFixed(m[3])+'</b></td><td>'+w(lo)+'</td><td class="r">'+hAvg(a.map(h=>h[m[0]])).toFixed(1)+'</td></tr>'}).join('')+'</tbody></table></div>';
+  return tiles+ctl+charts+mm+'<div class="note">グラフと表は、選んだ月・時間の記録だけで作ります。「すべて」を選ぶと、同じ日に複数回測った分はその日の平均になります。</div>'}
+function ppBtn(){return PAYPAL_URL?'<div class="support"><a class="pp" href="'+esc(PAYPAL_URL)+'" target="_blank" rel="noopener noreferrer">☕ このアプリを応援する（PayPal）</a></div>':''}
+function vSet(){return backupNote()+
+  '<h2>バックアップ</h2><div class="card"><p style="margin-top:0">記録はこのスマートフォン（このブラウザ）の中だけにあります。機種変更・故障・閲覧データの削除で消えるので、月に一度はバックアップを保存してください。</p><p class="note">「バックアップを保存」を押すと、iPhone では共有メニューが開くので「\"ファイル\"に保存」、Android ではダウンロードに保存されます。</p><div class="bar"><button class="b" id="bSave">バックアップを保存</button><button class="g" id="bLoad">バックアップから復元</button><button class="g" id="bCsv">CSVで保存</button></div><p class="note" style="margin-bottom:0">最後のバックアップ：'+(S.lastBackup?fd(S.lastBackup):'まだありません')+'　／　記録 '+S.recs.length+' 件</p></div>'+
+  '<h2>時間の選択肢</h2><div class="card"><div class="note">1行に1つ。上から順に並びます（例：朝、昼、夜、就寝前）。</div><textarea id="slots" rows="4">'+esc(S.slots.join('\n'))+'</textarea></div>'+
+  '<h2>すべて消す</h2><div class="card"><button class="d" id="bReset">この端末の記録をすべて消す</button><div class="note">元に戻せません。必要なら先にバックアップを保存してください。</div></div>'+(PAYPAL_URL?'<h2>応援</h2><div class="card"><p style="margin-top:0">このアプリが役に立ったら、PayPalで応援していただけるとうれしいです。</p>'+ppBtn()+'</div>':'')}
+function render(){$('#nav').innerHTML=TABS.map(([k,l])=>'<button data-tab="'+k+'" class="'+(k===tab?'on':'')+'">'+l+'</button>').join('');$('#main').innerHTML={list:vList,graph:vGraph,set:vSet}[tab]();$('#foot').innerHTML=(tab==='set'?'':ppBtn())}
+// ---------- edit ----------
+function edit(i){const isNew=i==null,hr=new Date().getHours(),ds=hr<11?'朝':hr<17?'昼':'夜';
+  const h=isNew?{d:today(),slot:S.slots.includes(ds)?ds:(S.slots[0]||'')}:S.recs[i];if(!h)return;
+  const ops=S.slots.slice();if(h.slot&&!ops.includes(h.slot))ops.push(h.slot);
+  const d=$('#dlg');
+  d.innerHTML='<form method="dialog"><div class="hd">'+(isNew?'記録する':'記録を直す')+'</div><div class="bd"><div class="grid"><label>日付<input type="date" id="f_d" value="'+esc(h.d||'')+'"></label><label>時間<select id="f_slot">'+ops.map(o=>'<option'+(o===h.slot?' selected':'')+'>'+esc(o)+'</option>').join('')+'</select></label>'+
+    HM.map(m=>'<label>'+m[1]+'（'+m[2]+'）<input type="number" step="'+(m[3]?'0.1':'1')+'" inputmode="decimal" id="f_'+m[0]+'" value="'+(hNum(h,m[0])?h[m[0]]:'')+'"></label>').join('')+'</div><p class="note" style="margin-bottom:0;white-space:normal">測った項目だけ入れてください。</p></div><div class="ft">'+(isNew?'':'<button type="button" class="d" id="fdel">削除</button>')+'<span style="flex:1"></span><button type="button" class="g" id="fcan">キャンセル</button><button type="submit" class="b">保存</button></div></form>';
+  d.querySelector('form').onsubmit=e=>{e.preventDefault();const r={d:$('#f_d').value,slot:$('#f_slot').value};
+    for(const m of HM){const v=$('#f_'+m[0]).value.trim();if(v==='')continue;const n=Number(v);if(!isFinite(n)||n<0){tell(m[1]+'は数字で入れてください');return}r[m[0]]=n}
+    if(!r.d){tell('日付を入れてください');return}if(!HM.some(m=>r[m[0]]!=null)){tell('測った項目を1つ以上入れてください');return}
+    if(isNew)S.recs.push(r);else S.recs[i]=r;save();d.close();render();toast('保存しました')};
+  $('#fcan').onclick=()=>d.close();
+  if(!isNew)$('#fdel').onclick=async()=>{if(await ask('この記録を削除しますか？')){S.recs.splice(i,1);save();d.close();render();toast('削除しました')}};
+  d.showModal()}
+// ---------- backup ----------
+function exportJson(){return JSON.stringify({app:'taicho-kanri',v:1,exported:today(),slots:S.slots,recs:sorted().reverse().map(x=>x[0])})}
+function clean(a){const out=[];for(const x of a||[]){if(!x||typeof x.d!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(x.d))continue;const r={d:x.d,slot:typeof x.slot==='string'?x.slot:''};for(const m of HM)if(typeof x[m[0]]==='number'&&isFinite(x[m[0]]))r[m[0]]=x[m[0]];if(HM.some(m=>r[m[0]]!=null))out.push(r)}return out}
+async function importJson(text){let o;try{o=JSON.parse(text)}catch(e){tell('ファイルを読み込めませんでした（バックアップのファイルではありません）。');return}
+  const src=o&&(Array.isArray(o.recs)?o.recs:Array.isArray(o.health)?o.health:null);if(!src){tell('体調管理のバックアップではないようです。');return}
+  const recs=clean(src);if(!await ask('今の記録（'+S.recs.length+' 件）を、選んだファイルの内容（'+recs.length+' 件）にすべて置き換えます。\nよろしいですか？'))return;
+  S.recs=recs;if(Array.isArray(o.slots)&&o.slots.length)S.slots=o.slots.map(String);save();render();toast('復元しました')}
+function exportCsv(){const q=v=>{v=v==null?'':String(v);return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  return '﻿'+['日付','曜','時間'].concat(HM.map(m=>m[1]+'('+m[2]+')')).join(',')+'\r\n'+sorted().map(([h])=>[fd(h.d),dow(h.d),h.slot].concat(HM.map(m=>hNum(h,m[0])?h[m[0]]:'')).map(q).join(',')).join('\r\n')+'\r\n'}
+// ---------- events ----------
+document.addEventListener('click',async e=>{const t=e.target;
+  const tb=t.closest('[data-tab]');if(tb){tab=tb.dataset.tab;render();window.scrollTo(0,0);return}
+  if(t.id==='add'||t.id==='add2')return edit();
+  if(t.id==='bSave')return dl('体調管理_バックアップ_'+today()+'.json',exportJson(),()=>{S.lastBackup=today();save();render()});
+  if(t.id==='bCsv')return dl('体調管理_'+today()+'.csv',exportCsv());
+  if(t.id==='bLoad')return $('#file').click();
+  if(t.id==='bReset'){if(await ask('この端末の記録 '+S.recs.length+' 件をすべて消します。元に戻せません。\nよろしいですか？')){S.recs=[];S.lastBackup='';save();render();toast('すべて消しました')}return}
+  const tr=t.closest('tr[data-rec]');if(tr)edit(+tr.dataset.rec)});
+document.addEventListener('change',e=>{const t=e.target;
+  if(t.id==='hs'||t.id==='hm'){ui[t.id]=t.value;return render()}
+  if(t.id==='slots'){const a=t.value.split('\n').map(x=>x.trim()).filter(Boolean);if(a.length){S.slots=[...new Set(a)];save();toast('保存しました')}else{t.value=S.slots.join('\n');toast('1つ以上入れてください')}return}
+  if(t.id==='file'&&t.files[0]){const f=new FileReader();f.onload=()=>importJson(String(f.result).replace(/^﻿/,''));f.readAsText(t.files[0]);t.value=''}});
+load();render();
+</script>
+
+</body>
+</html>
