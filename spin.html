@@ -228,6 +228,23 @@ tr.cur td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 .grip .mg{max-width:240px}
 .grip strong{font-size:14px}
 .grip p{margin:0;font-size:12.5px;color:var(--muted)}
+/* own songs (Marathon BGM style) */
+.ownbox{display:flex;flex-direction:column;gap:8px;border:1px dashed var(--line);border-radius:10px;padding:10px}
+.ownhead{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn.sm{padding:6px 12px;font-size:13px}
+.songlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:340px;overflow:auto}
+.songlist li{display:flex;flex-direction:column;gap:5px;padding:8px;border-radius:8px;background:var(--bg);min-width:0}
+.songlist li.playing{box-shadow:inset 3px 0 0 var(--accent)}
+.srow{display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:wrap}
+.srow .nm{flex:1 1 120px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px;font-weight:700}
+.srow input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent)}
+.srow input[type=number]{width:70px;font:inherit;font-size:13px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.mini{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:12px;padding:3px 8px;border-radius:6px;cursor:pointer}
+.mini.on{border-color:var(--accent);color:var(--accent);font-weight:700}
+.fit{font-size:12px;color:var(--muted)}
+.fit b{color:var(--ink);font-family:var(--mono)}
+.flag{display:inline-block;font-size:11px;font-weight:700;color:var(--z4);border:1px solid var(--z4);border-radius:4px;padding:0 4px;margin-left:4px}
+.src{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 4px}
 .howlink{appearance:none;background:none;border:none;padding:0;font:inherit;color:inherit;cursor:pointer;text-align:left;text-decoration:underline dotted var(--muted);text-underline-offset:3px}
 
 /* support */
@@ -267,6 +284,12 @@ tr.cur td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
         <span class="label" data-t="音楽(テンポはケイデンスに自動で合わせます)">音楽(テンポはケイデンスに自動で合わせます)</span>
         <div class="chips" id="songChips"></div>
         <p class="hint" id="songDesc"></p>
+        <div class="ownbox" id="ownBox" hidden>
+          <div class="ownhead"><button class="btn sm primary" id="addSongs" data-t="曲を追加">曲を追加</button><input type="file" id="songFile" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac" multiple hidden></div>
+          <p class="hint" id="ownInfo"></p>
+          <ul class="songlist" id="songList"></ul>
+          <label class="toggle"><span data-t="音程を保つ(オフの方が音がきれい)">音程を保つ(オフの方が音がきれい)</span><input id="keepPitch" type="checkbox"></label>
+        </div>
       </div>
       <div class="field">
         <span class="label" data-t="サウンド">サウンド</span>
@@ -393,7 +416,7 @@ const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},se
 
 /* ================= i18n ================= */
 let LANG=(()=>{const v=store.get('jibun.lang');if(v==='ja'||v==='en')return v;return (navigator.language||'ja').toLowerCase().startsWith('ja')?'ja':'en'})();
-const EN=/*EN*/{"ソロスピン・コーチ": "Solo Spin Coach", "ウォームアップ": "Warm-up", "メイン {n}: {b}": "Main {n}: {b}", "つなぎ": "Bridge", "クールダウン": "Cool-down", "降りてストレッチ": "Off the bike: stretch", "サドル=腰骨の高さ": "Saddle = hip-bone height", "ハンドル=サドルと同じ〜少し上": "Bars = saddle height or a bit higher", "一番下で膝が": "Knee slightly bent", "少し曲がる": "at the bottom", "吐きながら伸ばす": "Exhale and ease in", "吐いて…": "Breathe out…", "吸って…": "Breathe in…", "左": "L", "右": "R", "↑ 前": "↑ Front", "目安": "Target", "負荷": "Resistance", "使う場面": "Use for", "親指はハンドルに軽くかけ、手首はまっすぐに保つ": "Rest your thumbs lightly on the bar and keep your wrists straight", "伸びる場所": "Stretches", "左右それぞれ20〜30秒。反動をつけず、息を吐きながらじわっと伸ばす": "20–30 seconds per side. No bouncing; ease deeper as you breathe out", "20〜30秒。反動をつけず、息を吐きながらじわっと伸ばす": "20–30 seconds. No bouncing; ease deeper as you breathe out", "握り": "Grip", "いま 約{v}km/h": "now ≈{v} km/h", "予定 約{v} km": "plan ≈{v} km", "予定 約{v} kcal(体重{w}kg)": "plan ≈{v} kcal ({w} kg)", "{m}分": "{m} min", "まず右側から。": "Start with your right side. ", "回転{r}前後、負荷{l}。": "Cadence about {r}, resistance {l}. ", "クールダウン終了です。ペダルをゆっくり止めて、バイクから降りてください。準備ができたら、ストレッチ開始ボタンを押してください。": "Cool-down complete. Slow the pedals to a stop and get off the bike. When you are ready, press Start stretching.", "一時停止": "Pause", "ストレッチ開始": "Start stretching", "もう一度": "Again", "再開": "Resume", "スタート": "Start", "ストレッチ": "Stretch", "ストレッチ中": "Stretching", "右側": "Right side", "片側 {s}秒": "{s} s per side", "{s}秒": "{s} s", "目標 {a}–{b}": "target {a}–{b}", "負荷 {r} / 10": "resistance {r} / 10", "この区間 {t}": "this block {t}", "これが最後の区間です": "This is the last block", "次は <strong>バイクを降りてストレッチ</strong>(「ストレッチ開始」を押すまで待ちます)": "Next: <strong>get off the bike and stretch</strong> (the timer waits until you press Start stretching)", "次は <strong>{n}</strong>": "Next: <strong>{n}</strong> ", "降車": "Off bike", "バイクから降りましょう": "Time to get off the bike", "あわてずに。止まってから降りよう": "No rush. Stop first, then get off.", "タイマー停止中": "timer paused", "準備": "Ready", "{m}分・{l}メニュー": "{m}-min {l} ride", "バイクに乗り、サドルの高さを確認したらスタートを押してください。": "Get on the bike, check the saddle height, then press Start.", "最初にサドルとハンドルの高さを確認(下の「乗る前のセッティング」参照)": "Check the saddle and bar height first (see “Setting up the bike” below)", "飲み物とタオルを手の届く所に置く": "Keep a drink and a towel within reach", "音楽と音声ガイドを使うときは、音量を確認する": "Check the volume if you use music and voice guidance", "最初は <strong>{n}</strong>": "First: <strong>{n}</strong> ", "おつかれさまでした。消費カロリーは約{k}キロカロリー、走行距離は約{d}キロメートルです。水分をとって休みましょう。": "Great work. You burned about {k} calories and covered about {d} kilometers. Drink some water and rest.", "完了": "Done", "おつかれさまでした": "Great work", "{m}分のトレーニングを完了しました。消費カロリーは約{k}kcal、推定走行距離は約{d}kmです。水分をとって休みましょう。": "You finished your {m}-minute ride: about {k} kcal and an estimated {d} km. Drink some water and rest.", "反対側に替えます。左側をゆっくり伸ばします。": "Switch sides. Now slowly stretch your left side.", "左側": "Left side", "あと10秒でクールダウン終了です。ペダルを止める準備をしましょう。": "Ten seconds left in the cool-down. Get ready to stop pedaling.", "あと10秒。次は{n}。": "Ten seconds. Next: {n}.", "座る": "Sit", "立つ": "Stand", "この端末に保存できませんでした(プライベートモードでは保存されません)": "Couldn't save on this device (private browsing doesn't keep data)", "記録しました": "Saved", "途中までの記録を残しました": "Saved your partial ride", "{n}回": "{n}", "合計 {m}分": "{m} min total", "直近7日間の消費カロリー": "Calories, last 7 days", "今日": "Today", "まだ記録はありません。トレーニングを最後まで終えるか、1分以上漕いでからリセットすると、ここに残ります。": "No rides yet. Finish a workout, or ride for at least a minute and press Reset, and it will appear here.", "完走": "Finished", "途中まで": "Partial", "削除": "Delete", "本当に削除": "Confirm delete", "Dropboxへの接続をキャンセルしました": "Dropbox connection cancelled", "Dropboxに接続しました": "Connected to Dropbox", "このスマートフォン(ブラウザ)に保存しています": "Saved on this phone (in this browser)", "Dropboxにログインすると、記録をDropboxにも保存できます": "Sign in to Dropbox to save your rides there too", "Dropboxと同期しています…": "Syncing with Dropbox…", "Dropboxに接続できませんでした。記録はこの端末に保存しています": "Couldn't reach Dropbox. Your rides are saved on this device.", "Dropboxに保存済み({t})": "Saved to Dropbox ({t})", "Dropboxに接続しています": "Connected to Dropbox", "接続を解除": "Disconnect", "Dropboxに接続": "Connect Dropbox", "この端末とDropboxに保存しています": "Saved on this device and in Dropbox", "Dropboxとの接続を解除しました": "Disconnected from Dropbox", "Dropboxに接続できませんでした。時間をおいてもう一度お試しください": "Couldn't connect to Dropbox. Please try again later.", "時間とレベルを選ぶと、ウォームアップからストレッチまでのメニューと音楽を自動で作ります": "Pick a time and level, and get a full ride from warm-up to stretches, with music to match", "設定": "Settings", "トレーニング時間": "Workout length", "任意": "Custom", "分": "min", "レベル": "Level", "体重(カロリー計算用)": "Body weight (for calories)", "音楽(テンポはケイデンスに自動で合わせます)": "Music (tempo follows your cadence)", "サウンド": "Sound", "音声ガイド": "Voice guidance", "カウントダウン音": "Countdown beeps", "音量": "Volume", "別パターンで作り直す": "Make a different ride", "いまの乗り方の図": "Current position", "この動きの図解を見る": "See how to do this", "クールダウン終了。バイクから降りましょう": "Cool-down done. Time to get off the bike", "ペダルをゆっくり止め、負荷を上げてペダルを固定する": "Slow the pedals to a stop, then turn up the resistance to lock them", "ハンドルを持ったまま、片足ずつ床に下ろす": "Keep hold of the bar and lower one foot at a time", "サドルの横に立ったら「ストレッチ開始」を押す": "Once you're standing beside the saddle, press Start stretching", "ボタンを押すまでタイマーは止まっています。あわてずに降りてください。": "The timer stays paused until you press the button. Take your time.", "残り": "Time left", "ケイデンス RPM": "Cadence RPM", "負荷 / 姿勢": "Resistance / position", "消費カロリー": "Calories", "推定走行距離": "Est. distance", "次へ": "Skip", "リセット": "Reset", "トレーニング記録": "Ride log", "今週の回数": "Rides this week", "今週の消費": "Burned this week", "今週の距離": "Distance this week", "累計": "All time", "もっと見る": "Show more", "今すぐ同期": "Sync now", "マンガでわかる乗り方": "How to ride, in pictures", "強度プロフィール": "Intensity profile", "時間ごとの強度ゾーン": "Intensity zones over time", "Z1 回復": "Z1 Recovery", "Z2 有酸素": "Z2 Aerobic", "Z3 テンポ": "Z3 Tempo", "Z4 きつい": "Z4 Hard", "Z5 全力": "Z5 All-out", "降車ストレッチ": "Off-bike stretch", "メニュー": "Ride plan", "開始": "Start", "内容": "Block", "姿勢": "Position", "時間": "Time", "カロリーと距離は推定値です。距離は、各区間の強度から出力(ワット)を見積もり、平地を一般的なロードバイクで走った場合の速度に換算しています。坂の区間も平地換算です。負荷は10段階の目安です。バイクの抵抗ダイヤルに合わせて調整してください。始める前と途中に水分をとり、めまい・胸の痛みがあればすぐに中止してください。": "Calories and distance are estimates. Distance converts each block's effort into watts, then into the speed of a typical road bike on flat ground (climbs count as flat). Resistance uses a 1–10 guide; match it to your bike's dial. Drink water before and during your ride, and stop at once if you feel dizzy or have chest pain.", "☕ このアプリを応援する(PayPal)": "☕ Support this app (PayPal)", "応援は任意です。いただいた応援は、アプリの改良と音楽づくりに使わせていただきます。": "Support is optional. It goes toward improving the app and making music.", "{n}拍ずつ": "{n} beats each", "上級メニュー": "Advanced"};
+const EN=/*EN*/{"ソロスピン・コーチ": "Solo Spin Coach", "ウォームアップ": "Warm-up", "メイン {n}: {b}": "Main {n}: {b}", "つなぎ": "Bridge", "クールダウン": "Cool-down", "降りてストレッチ": "Off the bike: stretch", "サドル=腰骨の高さ": "Saddle = hip-bone height", "ハンドル=サドルと同じ〜少し上": "Bars = saddle height or a bit higher", "一番下で膝が": "Knee slightly bent", "少し曲がる": "at the bottom", "吐きながら伸ばす": "Exhale and ease in", "吐いて…": "Breathe out…", "吸って…": "Breathe in…", "左": "L", "右": "R", "↑ 前": "↑ Front", "目安": "Target", "負荷": "Resistance", "使う場面": "Use for", "親指はハンドルに軽くかけ、手首はまっすぐに保つ": "Rest your thumbs lightly on the bar and keep your wrists straight", "伸びる場所": "Stretches", "左右それぞれ20〜30秒。反動をつけず、息を吐きながらじわっと伸ばす": "20–30 seconds per side. No bouncing; ease deeper as you breathe out", "20〜30秒。反動をつけず、息を吐きながらじわっと伸ばす": "20–30 seconds. No bouncing; ease deeper as you breathe out", "握り": "Grip", "いま 約{v}km/h": "now ≈{v} km/h", "予定 約{v} km": "plan ≈{v} km", "予定 約{v} kcal(体重{w}kg)": "plan ≈{v} kcal ({w} kg)", "{m}分": "{m} min", "まず右側から。": "Start with your right side. ", "回転{r}前後、負荷{l}。": "Cadence about {r}, resistance {l}. ", "クールダウン終了です。ペダルをゆっくり止めて、バイクから降りてください。準備ができたら、ストレッチ開始ボタンを押してください。": "Cool-down complete. Slow the pedals to a stop and get off the bike. When you are ready, press Start stretching.", "一時停止": "Pause", "ストレッチ開始": "Start stretching", "もう一度": "Again", "再開": "Resume", "スタート": "Start", "ストレッチ": "Stretch", "ストレッチ中": "Stretching", "右側": "Right side", "片側 {s}秒": "{s} s per side", "{s}秒": "{s} s", "目標 {a}–{b}": "target {a}–{b}", "負荷 {r} / 10": "resistance {r} / 10", "この区間 {t}": "this block {t}", "これが最後の区間です": "This is the last block", "次は <strong>バイクを降りてストレッチ</strong>(「ストレッチ開始」を押すまで待ちます)": "Next: <strong>get off the bike and stretch</strong> (the timer waits until you press Start stretching)", "次は <strong>{n}</strong>": "Next: <strong>{n}</strong> ", "降車": "Off bike", "バイクから降りましょう": "Time to get off the bike", "あわてずに。止まってから降りよう": "No rush. Stop first, then get off.", "タイマー停止中": "timer paused", "準備": "Ready", "{m}分・{l}メニュー": "{m}-min {l} ride", "バイクに乗り、サドルの高さを確認したらスタートを押してください。": "Get on the bike, check the saddle height, then press Start.", "最初にサドルとハンドルの高さを確認(下の「乗る前のセッティング」参照)": "Check the saddle and bar height first (see “Setting up the bike” below)", "飲み物とタオルを手の届く所に置く": "Keep a drink and a towel within reach", "音楽と音声ガイドを使うときは、音量を確認する": "Check the volume if you use music and voice guidance", "最初は <strong>{n}</strong>": "First: <strong>{n}</strong> ", "おつかれさまでした。消費カロリーは約{k}キロカロリー、走行距離は約{d}キロメートルです。水分をとって休みましょう。": "Great work. You burned about {k} calories and covered about {d} kilometers. Drink some water and rest.", "完了": "Done", "おつかれさまでした": "Great work", "{m}分のトレーニングを完了しました。消費カロリーは約{k}kcal、推定走行距離は約{d}kmです。水分をとって休みましょう。": "You finished your {m}-minute ride: about {k} kcal and an estimated {d} km. Drink some water and rest.", "反対側に替えます。左側をゆっくり伸ばします。": "Switch sides. Now slowly stretch your left side.", "左側": "Left side", "あと10秒でクールダウン終了です。ペダルを止める準備をしましょう。": "Ten seconds left in the cool-down. Get ready to stop pedaling.", "あと10秒。次は{n}。": "Ten seconds. Next: {n}.", "座る": "Sit", "立つ": "Stand", "この端末に保存できませんでした(プライベートモードでは保存されません)": "Couldn't save on this device (private browsing doesn't keep data)", "記録しました": "Saved", "途中までの記録を残しました": "Saved your partial ride", "{n}回": "{n}", "合計 {m}分": "{m} min total", "直近7日間の消費カロリー": "Calories, last 7 days", "今日": "Today", "まだ記録はありません。トレーニングを最後まで終えるか、1分以上漕いでからリセットすると、ここに残ります。": "No rides yet. Finish a workout, or ride for at least a minute and press Reset, and it will appear here.", "完走": "Finished", "途中まで": "Partial", "削除": "Delete", "本当に削除": "Confirm delete", "Dropboxへの接続をキャンセルしました": "Dropbox connection cancelled", "Dropboxに接続しました": "Connected to Dropbox", "このスマートフォン(ブラウザ)に保存しています": "Saved on this phone (in this browser)", "Dropboxにログインすると、記録をDropboxにも保存できます": "Sign in to Dropbox to save your rides there too", "Dropboxと同期しています…": "Syncing with Dropbox…", "Dropboxに接続できませんでした。記録はこの端末に保存しています": "Couldn't reach Dropbox. Your rides are saved on this device.", "Dropboxに保存済み({t})": "Saved to Dropbox ({t})", "Dropboxに接続しています": "Connected to Dropbox", "接続を解除": "Disconnect", "Dropboxに接続": "Connect Dropbox", "この端末とDropboxに保存しています": "Saved on this device and in Dropbox", "Dropboxとの接続を解除しました": "Disconnected from Dropbox", "Dropboxに接続できませんでした。時間をおいてもう一度お試しください": "Couldn't connect to Dropbox. Please try again later.", "時間とレベルを選ぶと、ウォームアップからストレッチまでのメニューと音楽を自動で作ります": "Pick a time and level, and get a full ride from warm-up to stretches, with music to match", "設定": "Settings", "トレーニング時間": "Workout length", "任意": "Custom", "分": "min", "レベル": "Level", "体重(カロリー計算用)": "Body weight (for calories)", "音楽(テンポはケイデンスに自動で合わせます)": "Music (tempo follows your cadence)", "サウンド": "Sound", "音声ガイド": "Voice guidance", "カウントダウン音": "Countdown beeps", "音量": "Volume", "別パターンで作り直す": "Make a different ride", "いまの乗り方の図": "Current position", "この動きの図解を見る": "See how to do this", "クールダウン終了。バイクから降りましょう": "Cool-down done. Time to get off the bike", "ペダルをゆっくり止め、負荷を上げてペダルを固定する": "Slow the pedals to a stop, then turn up the resistance to lock them", "ハンドルを持ったまま、片足ずつ床に下ろす": "Keep hold of the bar and lower one foot at a time", "サドルの横に立ったら「ストレッチ開始」を押す": "Once you're standing beside the saddle, press Start stretching", "ボタンを押すまでタイマーは止まっています。あわてずに降りてください。": "The timer stays paused until you press the button. Take your time.", "残り": "Time left", "ケイデンス RPM": "Cadence RPM", "負荷 / 姿勢": "Resistance / position", "消費カロリー": "Calories", "推定走行距離": "Est. distance", "次へ": "Skip", "リセット": "Reset", "トレーニング記録": "Ride log", "今週の回数": "Rides this week", "今週の消費": "Burned this week", "今週の距離": "Distance this week", "累計": "All time", "もっと見る": "Show more", "今すぐ同期": "Sync now", "マンガでわかる乗り方": "How to ride, in pictures", "強度プロフィール": "Intensity profile", "時間ごとの強度ゾーン": "Intensity zones over time", "Z1 回復": "Z1 Recovery", "Z2 有酸素": "Z2 Aerobic", "Z3 テンポ": "Z3 Tempo", "Z4 きつい": "Z4 Hard", "Z5 全力": "Z5 All-out", "降車ストレッチ": "Off-bike stretch", "メニュー": "Ride plan", "開始": "Start", "内容": "Block", "姿勢": "Position", "時間": "Time", "カロリーと距離は推定値です。距離は、各区間の強度から出力(ワット)を見積もり、平地を一般的なロードバイクで走った場合の速度に換算しています。坂の区間も平地換算です。負荷は10段階の目安です。バイクの抵抗ダイヤルに合わせて調整してください。始める前と途中に水分をとり、めまい・胸の痛みがあればすぐに中止してください。": "Calories and distance are estimates. Distance converts each block's effort into watts, then into the speed of a typical road bike on flat ground (climbs count as flat). Resistance uses a 1–10 guide; match it to your bike's dial. Drink water before and during your ride, and stop at once if you feel dizzy or have chest pain.", "☕ このアプリを応援する(PayPal)": "☕ Support this app (PayPal)", "応援は任意です。いただいた応援は、アプリの改良と音楽づくりに使わせていただきます。": "Support is optional. It goes toward improving the app and making music.", "{n}拍ずつ": "{n} beats each", "上級メニュー": "Advanced", "曲を追加": "Add songs", "音程を保つ(オフの方が音がきれい)": "Keep pitch (sounds cleaner when off)", "1拍に2回転": "2 turns per beat", "2拍で1回転": "1 turn per 2 beats", "1拍に1回転": "1 turn per beat", "スマホの中の音楽ファイル(MP3など)を選びます。BPMは自動で測り、ペダルの回転に合わせて速さを変えて流します。曲がないあいだは、内蔵のBGMが流れます。": "Choose music files (MP3 etc.) on your phone. The BPM is measured automatically and each song plays at the speed that matches your pedaling. Until you add songs, the built-in track plays.", "{n}曲(この端末に保存。次に開いたときも残ります)": "{n} songs (saved on this device; kept for next time)", "うち{n}曲はマラソンBGMアプリの曲": "{n} from the Marathon BGM app", "使う": "Use", "マラソンBGM": "Marathon BGM", "外す": "Remove", "本当に外す": "Confirm remove", "曲のBPM": "Song BPM", "停止": "Stop", "試聴": "Preview", "タップ": "Tap", "BPMを測定中…": "Measuring BPM…", "このファイルは解析できませんでした。BPMを入力してください。": "This file couldn't be analyzed. Enter the BPM.", "ケイデンス{c}なら": "At cadence {c}:", "変化大": "big change", "原曲の速さ": "original speed", "BPM測定中": "measuring BPM"};
 function T(k,v){let s=(LANG==='en'&&EN[k]!=null)?EN[k]:k;if(v)s=s.replace(/\{(\w+)\}/g,(m,n)=>v[n]!=null?v[n]:m);return s}
 const L=o=>o==null?'':(typeof o==='string'?o:(o[LANG]!=null?o[LANG]:o.ja));
 function applyStatic(){
@@ -903,12 +926,12 @@ function renderSettings(){
 $('#timeChips').addEventListener('click',e=>{const b=e.target.closest('[data-t2]');if(!b)return;st.T=+b.dataset.t2;rebuild()});
 $('#customMin').addEventListener('change',e=>{st.T=clamp(Math.round(+e.target.value||30),10,90);rebuild()});
 $('#levelChips').addEventListener('click',e=>{const b=e.target.closest('[data-l]');if(!b)return;st.level=b.dataset.l;rebuild()});
-$('#songChips').addEventListener('click',e=>{const b=e.target.closest('[data-song]');if(!b)return;st.song=b.dataset.song;renderSettings();save();paintBpm();if(!st.running)previewSong()});
+$('#songChips').addEventListener('click',e=>{const b=e.target.closest('[data-song]');if(!b)return;st.song=b.dataset.song;renderSettings();save();renderSongs();paintBpm();if(st.running){if(ownActive())musicPlay();else musicPause()}else previewSong()});
 $('#regen').addEventListener('click',()=>{st.seed=Math.floor(Math.random()*1e9);rebuild()});
 $('#tVoice').addEventListener('change',e=>{st.voice=e.target.checked;if(!st.voice)try{speechSynthesis.cancel()}catch(_){};save()});
 $('#tCount').addEventListener('change',e=>{st.count=e.target.checked;save()});
 $('#weight').addEventListener('change',e=>{st.weight=clamp(+e.target.value||60,25,200);e.target.value=st.weight;renderMenu();updateKcal(st.started?elapsed():0);save()});
-$('#vol').addEventListener('input',e=>{st.vol=+e.target.value;if(master)master.gain.value=st.vol;save()});
+$('#vol').addEventListener('input',e=>{st.vol=+e.target.value;if(master)master.gain.value=st.vol;audio.volume=songVol();preview.volume=st.vol;save()});
 $('#langBtn').addEventListener('click',()=>{LANG=LANG==='ja'?'en':'ja';store.set('jibun.lang',LANG);try{speechSynthesis.cancel()}catch(e){};rerenderAll()});
 
 function rebuild(){generate();resetSession();renderSettings();renderMenu();renderProfile();save()}
@@ -973,7 +996,8 @@ const SONGS={
   beat:{n:{ja:'ビート',en:'Beat'},d:{ja:'キックとハイハットだけのシンプルなリズム。1拍=ペダル1回転です。',en:'A simple kick-and-hat rhythm. One beat equals one pedal turn.'},
     root:48,prog:[[0,'M'],[5,'M'],[7,'M'],[5,'M']],
     step(i,c,t,z){if(i%4===0)kick(t,i===0?1:.8);if(i%4===2)hat(t,z>=4?.28:.18);if(z>=5&&i%2===1)hat(t,.1)}},
-  marathon:{n:{ja:'マラソンBGM',en:'Marathon BGM'},d:{ja:'前向きなメロディの走りたくなる曲。強度が上がるほど楽器が増えます。',en:'An upbeat running track. More instruments join as the effort rises.'},
+  marathon:{n:{ja:'マラソンBGM(手持ちの曲)',en:'Marathon BGM (your songs)'},own:true,d:{ja:'スマホの中の好きな曲を、ペダルの回転(ケイデンス)に合わせた速さで流します。マラソンBGMアプリと同じしくみです。',en:'Plays your own songs, sped up or slowed down to match your pedaling cadence, just like the Marathon BGM app.'}},
+  pop:{n:{ja:'ポップ',en:'Pop'},d:{ja:'前向きなメロディの内蔵曲。強度が上がるほど楽器が増えます。',en:'A built-in upbeat track. More instruments join as the effort rises.'},
     root:50,prog:[[0,'M'],[7,'M'],[9,'m'],[5,'M']],
     step(i,c,t,z,sd){const r=c[0],tn=tri(c[1]);
       if(i%4===0)kick(t,.95);
@@ -1011,7 +1035,7 @@ function scheduler(){
   if(!ctx||!st.running)return;
   const s=st.segs[st.idx];if(!s)return;
   if(schedSeg!==st.idx){schedSeg=st.idx;segStep=0;nextStep=Math.max(nextStep,ctx.currentTime+.05)}
-  const bpm=s.rpm?mid(s):60,sd=60/bpm/4,song=SONGS[st.song];
+  const bpm=s.rpm?mid(s):60,sd=60/bpm/4,song=st.song==='marathon'?(ownActive()?SONGS.off:SONGS.pop):SONGS[st.song];
   while(nextStep<ctx.currentTime+.15){
     const i=segStep%16,bar=Math.floor(gStep/16),t=nextStep;
     if(song.step){const c=song.prog[bar%song.prog.length];
@@ -1025,11 +1049,159 @@ function flashBeat(i){const els=$('#beat').children;for(let k=0;k<4;k++)els[k].c
 let previewT=null;
 function previewSong(){
   initAudio();if(!ctx)return;if(ctx.state==='suspended')ctx.resume();
-  clearTimeout(previewT);const song=SONGS[st.song];if(!song.step)return;
+  clearTimeout(previewT);if(st.song==='marathon'&&own.songs.length)return;const song=st.song==='marathon'?SONGS.pop:SONGS[st.song];if(!song.step)return;
   const sd=60/88/4;let t=ctx.currentTime+.05;
   for(let k=0;k<32;k++){song.step(k%16,song.prog[Math.floor(k/16)%song.prog.length],t,4,sd);t+=sd}
 }
-function duck(on){if(!musicBus||!ctx)return;musicBus.gain.setTargetAtTime(on?.3:.85,ctx.currentTime,.08)}
+function duck(on){own.duck=on;audio.volume=songVol();if(!musicBus||!ctx)return;musicBus.gain.setTargetAtTime(on?.3:.85,ctx.currentTime,.08)}
+/* ================= Marathon BGM: your own songs, tempo matched to cadence ================= */
+/* Like the Marathon BGM app: BPM is measured automatically, then each song is sped up or slowed down
+   (×0.5 / ×1 / ×2 beat matching) so that one beat lands on one pedal turn at the target cadence. */
+const own={songs:[],cur:-1,db:null,taps:{},previewId:null,keepPitch:store.get('spin.keeppitch')==='1'};
+const audio=new Audio();audio.preload='auto';
+const preview=new Audio();
+const OVR=(()=>{try{return JSON.parse(store.get('spin.songovr')||'{}')}catch(e){return {}}})();
+const keyOfSong=x=>x.name+'|'+x.size;
+function saveOvr(){store.set('spin.songovr',JSON.stringify(OVR))}
+function setPitch(a){const k=!!own.keepPitch;a.preservesPitch=k;a.mozPreservesPitch=k;a.webkitPreservesPitch=k}
+function matchRate(songBpm,target){
+  if(!songBpm)return {rate:1,mult:1,unknown:true};
+  let best=null;for(const m of [.5,1,2]){const rate=target/(songBpm*m),dd=Math.abs(Math.log(rate));if(!best||dd<best.dd)best={rate,mult:m,dd}}
+  best.rate=Math.min(4,Math.max(.25,best.rate));best.big=best.rate<.75||best.rate>1.35;return best;
+}
+const multText=m=>m===2?T('1拍に2回転'):m===.5?T('2拍で1回転'):T('1拍に1回転');
+async function detectBpm(file){
+  const AC=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+  const buf=await new AC(1,1,44100).decodeAudioData(await file.arrayBuffer());
+  const sr=buf.sampleRate,dur=buf.duration;
+  const startS=Math.min(30,dur*.2),lenS=Math.max(4,Math.min(60,dur-startS));
+  const s0=Math.floor(startS*sr),n=Math.min(Math.floor(lenS*sr),buf.length-s0);
+  const c0=buf.getChannelData(0),c1=buf.numberOfChannels>1?buf.getChannelData(1):null;
+  const off=new AC(1,n,sr),b=off.createBuffer(1,n,sr),d=b.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=c1?(c0[s0+i]+c1[s0+i])*.5:c0[s0+i];
+  const src=off.createBufferSource();src.buffer=b;const lp=off.createBiquadFilter();lp.type='lowpass';lp.frequency.value=180;
+  src.connect(lp);lp.connect(off.destination);src.start();
+  const x=(await off.startRendering()).getChannelData(0);
+  const fps=200,hop=Math.floor(sr/fps),F=Math.floor(n/hop),envL=new Float32Array(F),envB=new Float32Array(F);
+  for(let f=0;f<F;f++){let a=0,bb=0;for(let i=f*hop,e=i+hop;i<e;i++){a+=x[i]*x[i];bb+=d[i]*d[i]}envL[f]=Math.log(1e-6+Math.sqrt(a/hop));envB[f]=Math.log(1e-6+Math.sqrt(bb/hop))}
+  const on=new Float32Array(F);let mean=0;
+  for(let f=1;f<F;f++){on[f]=Math.max(0,envL[f]-envL[f-1])+.6*Math.max(0,envB[f]-envB[f-1]);mean+=on[f]}
+  mean/=F;for(let f=0;f<F;f++)on[f]=Math.max(0,on[f]-mean);
+  const minL=Math.floor(fps*60/200),maxL=Math.ceil(fps*60/60),top=Math.min(F-1,maxL*2+2),acr=new Float32Array(top+1);
+  for(let l=minL;l<=top;l++){let sm=0;for(let i=0;i+l<F;i++)sm+=on[i]*on[i+l];acr[l]=sm/(F-l)}
+  let best=-1,bl=0;
+  for(let l=minL;l<=maxL;l++){const bpm=60*fps/l,sc=acr[l]+.5*(acr[2*l]||0)+.25*(acr[Math.round(l/2)]||0),w=Math.exp(-.5*Math.pow(Math.log2(bpm/125),2)),v=sc*w;if(v>best){best=v;bl=l}}
+  let lf=bl;if(bl>minL&&bl<maxL){const a=acr[bl-1],b2=acr[bl],c=acr[bl+1],den=a-2*b2+c;if(den)lf=bl+.5*(a-c)/den}
+  let bpm=60*fps/lf;while(bpm<70)bpm*=2;while(bpm>200)bpm/=2;
+  return {bpm:Math.round(bpm*10)/10,dur};
+}
+let detectQ=Promise.resolve();
+function enqueueDetect(x){detectQ=detectQ.then(async()=>{
+  try{const r=await detectBpm(x.file);if(x.bpm==null){x.bpm=r.bpm;saveSongMeta(x)}}catch(e){x.err=true}
+  x.detecting=false;renderSongs();if(st.running&&own.songs[own.cur]===x)applyRate(true)})}
+/* IndexedDB: this app's own library */
+function idb(name,ver,up){return new Promise(res=>{try{const r=ver?indexedDB.open(name,ver):indexedDB.open(name);r.onupgradeneeded=e=>up&&up(r,e);r.onsuccess=()=>res(r.result);r.onerror=()=>res(null);r.onblocked=()=>res(null)}catch(e){res(null)}})}
+function idbAll(db,storeName){return new Promise(res=>{try{const q=db.transaction(storeName,'readonly').objectStore(storeName).getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([])}catch(e){res([])}})}
+function idbGet(db,storeName,k){return new Promise(res=>{try{const q=db.transaction(storeName,'readonly').objectStore(storeName).get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>res(null)}catch(e){res(null)}})}
+function idbPut(db,stores,fn){return new Promise(res=>{try{const t=db.transaction(stores,'readwrite');fn(t);t.oncomplete=()=>res(true);t.onerror=t.onabort=()=>res(false)}catch(e){res(false)}})}
+const metaOfSong=(x,i)=>({id:x.id,name:x.name,size:x.size,bpm:x.bpm,order:i,use:x.use!==false});
+function saveSongMeta(x){
+  if(x.src==='own'&&own.db)idbPut(own.db,['meta'],t=>t.objectStore('meta').put(metaOfSong(x,own.songs.indexOf(x))));
+  else{const o=OVR[keyOfSong(x)]||{};o.bpm=x.bpm;o.use=x.use!==false;OVR[keyOfSong(x)]=o;saveOvr()}
+}
+async function loadLibrary(){
+  own.db=await idb('spin-library',1,r=>{const d=r.result;if(!d.objectStoreNames.contains('meta'))d.createObjectStore('meta',{keyPath:'id'});if(!d.objectStoreNames.contains('blobs'))d.createObjectStore('blobs')});
+  const list=[];
+  if(own.db){const metas=(await idbAll(own.db,'meta')).sort((a,b)=>a.order-b.order);
+    for(const m of metas){const blob=await idbGet(own.db,'blobs',m.id);if(!blob)continue;list.push({id:m.id,name:m.name,size:m.size,bpm:m.bpm??null,use:m.use!==false,file:blob,url:URL.createObjectURL(blob),src:'own',detecting:m.bpm==null})}}
+  /* songs already added in the Marathon BGM app (same site): read-only, never modified */
+  try{
+    let exists=true;
+    if(indexedDB.databases){const dbs=await indexedDB.databases();exists=dbs.some(d=>d.name==='cbgm-library')}
+    if(exists){const cb=await idb('cbgm-library',0,(r,e)=>{if(e.oldVersion===0)e.target.transaction.abort()});
+      if(cb&&cb.objectStoreNames.contains('meta')&&cb.objectStoreNames.contains('blobs')){
+        const hide=new Set(JSON.parse(store.get('spin.cbgmhide')||'[]'));
+        const metas=(await idbAll(cb,'meta')).filter(m=>m.shown!==false&&!m.parked&&m.use!==false).sort((a,b)=>a.order-b.order);
+        for(const m of metas){if(hide.has(m.id)||list.some(x=>keyOfSong(x)===m.name+'|'+m.size))continue;const blob=await idbGet(cb,'blobs',m.id);if(!blob)continue;
+          const o=OVR[m.name+'|'+m.size]||{};
+          list.push({id:'cb-'+m.id,cbid:m.id,name:m.name,size:m.size,bpm:o.bpm??m.bpm??null,use:o.use??true,file:blob,url:URL.createObjectURL(blob),src:'cbgm',detecting:(o.bpm??m.bpm)==null})}
+        cb.close()}}
+  }catch(e){}
+  own.songs=list;list.forEach(x=>{if(x.detecting)enqueueDetect(x)});renderSongs();paintBpm();
+}
+async function addFiles(files){
+  for(const f of files){
+    if(own.songs.some(x=>x.name===f.name.replace(/\.[^.]+$/,'')&&x.size===f.size))continue;
+    const x={id:'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:f.name.replace(/\.[^.]+$/,''),size:f.size,bpm:null,use:true,file:f,url:URL.createObjectURL(f),src:'own',detecting:true};
+    const o=OVR[keyOfSong(x)];if(o&&o.bpm){x.bpm=o.bpm;x.detecting=false}
+    own.songs.push(x);
+    if(own.db){const ok=await idbPut(own.db,['meta','blobs'],t=>{t.objectStore('blobs').put(f,x.id);t.objectStore('meta').put(metaOfSong(x,own.songs.length-1))});if(!ok)x.unsaved=true}
+    if(x.detecting)enqueueDetect(x);
+  }
+  renderSongs();if(st.running&&ownActive()&&audio.paused&&!st.waiting)musicPlay();
+}
+function removeSong(x){
+  const i=own.songs.indexOf(x);if(i<0)return;own.songs.splice(i,1);
+  if(x.src==='own'&&own.db)idbPut(own.db,['meta','blobs'],t=>{t.objectStore('meta').delete(x.id);t.objectStore('blobs').delete(x.id)});
+  else{const h=JSON.parse(store.get('spin.cbgmhide')||'[]');h.push(x.cbid);store.set('spin.cbgmhide',JSON.stringify(h))}
+  if(own.previewId===x.id){preview.pause();own.previewId=null}
+  if(own.cur===i){own.cur=-1;audio.pause();if(st.running&&ownActive())musicPlay()}else if(own.cur>i)own.cur--;
+  URL.revokeObjectURL(x.url);renderSongs();
+}
+const usedSongs=()=>own.songs.filter(x=>x.use!==false);
+const ownActive=()=>st.song==='marathon'&&usedSongs().length>0;
+function curSeg(){return st.segs[st.idx]}
+function targetRate(){
+  const x=own.songs[own.cur],s=curSeg();if(!x||!s)return 1;
+  if(s.type==='stretch')return 1;
+  return matchRate(x.bpm,mid(s)).rate;
+}
+let rampT=null,ramping=false;
+function applyRate(ramp){
+  const target=targetRate();clearInterval(rampT);ramping=false;
+  if(!ramp){audio.defaultPlaybackRate=target;audio.playbackRate=target;paintBpm();return}
+  const from=audio.playbackRate||1,steps=10;let k=0;ramping=true;
+  rampT=setInterval(()=>{k++;const r=from+(target-from)*k/steps;audio.playbackRate=r;audio.defaultPlaybackRate=r;if(k>=steps){clearInterval(rampT);ramping=false}},150);
+  paintBpm();
+}
+function songVol(){const s=curSeg();return Math.min(1,st.vol*(s&&s.type==='stretch'?.55:1)*(own.duck?.35:1))}
+function nextSong(from){const n=own.songs.length;if(!n)return -1;
+  for(const ok of [x=>x.use!==false&&x.bpm,x=>x.use!==false]){for(let k=1;k<=n;k++){const i=(((from+k)%n)+n)%n;if(ok(own.songs[i]))return i}}return -1}
+function playOwn(i){const x=own.songs[i];if(!x)return;own.cur=i;audio.src=x.url;setPitch(audio);audio.volume=songVol();applyRate(false);audio.play().catch(()=>{});renderSongs()}
+function musicPlay(){if(!ownActive())return;if(own.previewId){preview.pause();own.previewId=null;renderSongs()}
+  const x=own.songs[own.cur];if(!x||x.use===false)playOwn(nextSong(own.cur<0?-1:own.cur));else{audio.volume=songVol();applyRate(false);audio.play().catch(()=>{})}}
+function musicPause(){audio.pause()}
+function musicReset(){audio.pause();clearInterval(rampT);own.cur=-1;try{audio.removeAttribute('src');audio.load()}catch(e){}renderSongs()}
+function musicFade(){const v0=audio.volume;let k=0;const t=setInterval(()=>{k++;audio.volume=Math.max(0,v0*(1-k/20));if(k>=20){clearInterval(t);audio.pause()}},150)}
+audio.addEventListener('loadedmetadata',()=>{setPitch(audio);applyRate(false)});
+audio.addEventListener('playing',()=>{if(!ramping)applyRate(false)});
+audio.addEventListener('ended',()=>{if(st.running&&ownActive())playOwn(nextSong(own.cur))});
+function renderSongs(){
+  const box=$('#ownBox');box.hidden=st.song!=='marathon';if(box.hidden)return;
+  const s=curSeg()&&curSeg().rpm?curSeg():st.segs.find(x=>x.rpm),tgt=s?mid(s):90;
+  const nOwn=own.songs.filter(x=>x.src==='own').length,nCb=own.songs.length-nOwn;
+  $('#ownInfo').textContent=!own.songs.length?T('スマホの中の音楽ファイル(MP3など)を選びます。BPMは自動で測り、ペダルの回転に合わせて速さを変えて流します。曲がないあいだは、内蔵のBGMが流れます。'):
+    T('{n}曲(この端末に保存。次に開いたときも残ります)',{n:own.songs.length})+(nCb?' ・ '+T('うち{n}曲はマラソンBGMアプリの曲',{n:nCb}):'');
+  $('#songList').innerHTML=own.songs.map((x,i)=>{const m=matchRate(x.bpm,tgt),tp=own.taps[x.id];
+    return `<li class="${i===own.cur&&st.running?'playing':''}"><div class="srow"><input type="checkbox" data-use="${x.id}" ${x.use!==false?'checked':''} aria-label="${T('使う')}"><span class="nm" title="${x.name.replace(/"/g,'&quot;')}">${x.name.replace(/</g,'&lt;')}</span>${x.src==='cbgm'?`<span class="src">${T('マラソンBGM')}</span>`:''}<button class="mini" data-rm="${x.id}">${T('外す')}</button></div>
+      <div class="srow"><input type="number" data-bpm="${x.id}" value="${x.bpm??''}" placeholder="BPM" min="40" max="300" step="0.1" inputmode="decimal" aria-label="${T('曲のBPM')}"><button class="mini" data-half="${x.id}">÷2</button><button class="mini" data-dbl="${x.id}">×2</button><button class="mini${own.previewId===x.id?' on':''}" data-pv="${x.id}">${own.previewId===x.id?T('停止'):T('試聴')}</button><button class="mini" data-tap="${x.id}">${T('タップ')}${tp&&tp.length?' '+tp.length:''}</button></div>
+      <div class="fit">${x.detecting?T('BPMを測定中…'):x.err&&x.bpm==null?T('このファイルは解析できませんでした。BPMを入力してください。'):x.bpm?T('ケイデンス{c}なら',{c:tgt})+` <b>×${m.rate.toFixed(2)}</b>(${multText(m.mult)})${m.big?`<span class="flag">${T('変化大')}</span>`:''}`:''}</div></li>`}).join('');
+}
+$('#addSongs').addEventListener('click',()=>$('#songFile').click());
+$('#songFile').addEventListener('change',e=>{const f=[...e.target.files];e.target.value='';if(f.length)addFiles(f)});
+$('#keepPitch').checked=own.keepPitch;
+$('#keepPitch').addEventListener('change',e=>{own.keepPitch=e.target.checked;store.set('spin.keeppitch',own.keepPitch?'1':'0');setPitch(audio);setPitch(preview)});
+$('#songList').addEventListener('change',e=>{const t=e.target,id=t.dataset.use||t.dataset.bpm;const x=own.songs.find(y=>y.id===id);if(!x)return;
+  if(t.dataset.use){x.use=t.checked;saveSongMeta(x);if(st.running){if(!ownActive())musicPause();else if(own.songs[own.cur]===x&&!x.use)playOwn(nextSong(own.cur));else if(audio.paused&&!st.waiting)musicPlay()}renderSongs();paintBpm()}
+  else{const v=+t.value;if(v>=40&&v<=300){x.bpm=Math.round(v*10)/10;saveSongMeta(x);if(own.songs[own.cur]===x)applyRate(true)}renderSongs()}});
+$('#songList').addEventListener('click',e=>{const d=e.target.dataset||{},id=d.half||d.dbl||d.pv||d.tap||d.rm;if(!id)return;const x=own.songs.find(y=>y.id===id);if(!x)return;
+  if(d.half||d.dbl){if(!x.bpm)return;const v=d.half?x.bpm/2:x.bpm*2;if(v<40||v>300)return;x.bpm=Math.round(v*10)/10;saveSongMeta(x);if(own.songs[own.cur]===x)applyRate(true)}
+  else if(d.pv){if(own.previewId===id){preview.pause();own.previewId=null}else{if(st.running)musicPause();preview.src=x.url;setPitch(preview);preview.playbackRate=1;preview.volume=st.vol;preview.currentTime=Math.min(30,(preview.duration||60)*.2)||0;preview.play().catch(()=>{});own.previewId=id;preview.onended=()=>{own.previewId=null;renderSongs()}}}
+  else if(d.tap){const now=performance.now();let t=own.taps[id]||[];if(t.length&&now-t[t.length-1]>2000)t=[];t.push(now);if(t.length>12)t.shift();own.taps[id]=t;
+    if(t.length>=4){const iv=(t[t.length-1]-t[0])/(t.length-1);x.bpm=Math.round(60000/iv*10)/10;saveSongMeta(x);if(own.songs[own.cur]===x)applyRate(true)}}
+  else if(d.rm){if(e.target.classList.contains('on')){removeSong(x);return}e.target.classList.add('on');e.target.textContent=T('本当に外す');setTimeout(()=>{if(e.target.isConnected){e.target.classList.remove('on');e.target.textContent=T('外す')}},4000);return}
+  renderSongs()});
+
 
 /* ================= speech ================= */
 function speak(text){if(!st.voice)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=LANG==='en'?'en-US':'ja-JP';u.rate=1.05;u.volume=Math.min(1,st.vol+.2);
@@ -1057,16 +1229,18 @@ function start(){
   lockWake();renderSettings();updateButtons();
   if(st.idx<0){st.idx=0;onSegChange()}
   else if(fromWait)onSegChange();
+  musicPlay();
 }
-function pause(){st.acc=elapsed();st.running=false;try{speechSynthesis.cancel()}catch(e){};try{wake&&wake.release()}catch(e){};updateButtons()}
+function pause(){musicPause();st.acc=elapsed();st.running=false;try{speechSynthesis.cancel()}catch(e){};try{wake&&wake.release()}catch(e){};updateButtons()}
 function enterWait(i){
-  const s=st.segs[i];st.acc=s.start;st.running=false;st.waiting=true;st.idx=i;markCur();
+  const s=st.segs[i];st.acc=s.start;st.running=false;st.waiting=true;st.idx=i;markCur();musicPause();
   chime();speak(T('クールダウン終了です。ペダルをゆっくり止めて、バイクから降りてください。準備ができたら、ストレッチ開始ボタンを押してください。'));
   paintWait();updateButtons();
 }
 function resetSession(){
   st.running=false;st.started=false;st.done=false;st.waiting=false;st.stretchGo=false;st.acc=0;st.idx=-1;st.lastSec=null;st.said10=-1;st.sideSaid=-1;schedSeg=-1;
   try{speechSynthesis.cancel()}catch(e){};try{wake&&wake.release()}catch(e){}
+  musicReset();
   $('#waitBox').hidden=true;updateButtons();renderSettings();paintIdle();markCur();
 }
 function skip(){const s=st.segs[st.idx];if(!s||st.waiting)return;st.acc=s.start+s.dur;if(st.running)st.t0=performance.now()}
@@ -1085,12 +1259,17 @@ function onSegChange(){
   const s=st.segs[st.idx];st.said10=-1;st.sideSaid=-1;markCur();
   if(!s)return;
   chime();announce(s);paintSeg(s);
+  if(ownActive()){audio.volume=songVol();applyRate(true)}renderSongs();
 }
 function paintSteps(list){$('#steps').innerHTML=list.map(x=>`<li>${x}</li>`).join('')}
 function paintBpm(){
   const s=st.segs[Math.max(0,st.idx)],song=SONGS[st.song];
   if(!s){$('#bpmTxt').textContent='';return}
-  $('#bpmTxt').textContent=song.step?`♪ ${L(song.n)} ・ ${s.rpm?mid(s):60} BPM`:'';
+  if(ownActive()){const x=own.songs[own.cur];const tg=s.rpm?mid(s):null;
+    if(!x||!st.running){$('#bpmTxt').textContent=`♪ ${L(song.n)} ・ ${tg||60} BPM`;return}
+    const m=matchRate(x.bpm,tg||x.bpm||60);$('#bpmTxt').textContent=`♪ ${x.name} ・ `+(s.type==='stretch'?T('原曲の速さ'):x.bpm?`${x.bpm}→${tg} BPM ×${m.rate.toFixed(2)}`:T('BPM測定中'));return}
+  const sg=st.song==='marathon'?SONGS.pop:song;
+  $('#bpmTxt').textContent=sg.step?`♪ ${L(sg.n)} ・ ${s.rpm?mid(s):60} BPM`:'';
 }
 function paintSeg(s){
   $('#pill').textContent=s.z===0?T('ストレッチ'):'Z'+s.z;$('#pill').style.background=zc(s.z);
@@ -1140,7 +1319,7 @@ function paintIdle(){
   for(const b of $('#beat').children)b.classList.remove('hit');
 }
 function finish(){
-  st.running=false;st.done=true;st.acc=st.total;saveRecord(st.total,true);
+  st.running=false;st.done=true;st.acc=st.total;saveRecord(st.total,true);musicFade();
   try{wake&&wake.release()}catch(e){}
   chime();speak(T('おつかれさまでした。消費カロリーは約{k}キロカロリー、走行距離は約{d}キロメートルです。水分をとって休みましょう。',{k:Math.round(planKcal()),d:planKm().toFixed(1)}));
   paintDone();updateButtons();renderSettings();
@@ -1321,7 +1500,7 @@ $('#dbxSync').addEventListener('click',()=>dbxSync());
 
 /* ================= re-render on language change ================= */
 function rerenderAll(){
-  applyStatic();renderSettings();renderMenu();renderProfile();renderHow();refreshLog();renderDbx();
+  applyStatic();renderSettings();renderMenu();renderProfile();renderHow();refreshLog();renderDbx();renderSongs();
   if(st.waiting)paintWait();
   else if(st.done)paintDone();
   else if(st.started&&st.idx>=0){paintSeg(st.segs[st.idx]);if(!st.running)updateKcal(elapsed())}
@@ -1332,6 +1511,7 @@ function rerenderAll(){
 /* ================= boot ================= */
 applyStatic();generate();renderSettings();renderMenu();renderProfile();renderHow();resetSession();refreshLog();renderDbx();
 requestAnimationFrame(loop);
+loadLibrary();
 if(DBX_OK){dbxHandleRedirect().catch(()=>toast(T('Dropboxに接続できませんでした。時間をおいてもう一度お試しください'))).finally(()=>{renderDbx();dbxSync()})}
 })();
 </script>
