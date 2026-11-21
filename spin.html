@@ -1,0 +1,1340 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ソロスピン・コーチ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: settings rail + session console on top; log, manga how-to, profile, menu and support below */
+:root{
+  --bg:#ECEEF3; --surface:#FFFFFF; --sunk:#E2E5EC; --ink:#141821; --muted:#5A6274; --line:#D3D8E2;
+  --accent:#E0442A; --accent-ink:#FFFFFF;
+  --z0:#A9B0BF; --z1:#4F86EA; --z2:#22A58E; --z3:#D9A514; --z4:#EB7228; --z5:#D52E52;
+  --display:"Dela Gothic One","Hiragino Kaku Gothic StdN","Noto Sans JP",sans-serif;
+  --body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1016; --surface:#171A23; --sunk:#0A0C11; --ink:#ECEEF4; --muted:#9AA2B4; --line:#2A2F3C;
+  --accent:#FF6448; --accent-ink:#150806;
+  --z0:#5D6476; --z1:#6E9CF5; --z2:#36C2A7; --z3:#F0C23A; --z4:#FF8C45; --z5:#FF4F72; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1016; --surface:#171A23; --sunk:#0A0C11; --ink:#ECEEF4; --muted:#9AA2B4; --line:#2A2F3C;
+  --accent:#FF6448; --accent-ink:#150806;
+  --z0:#5D6476; --z1:#6E9CF5; --z2:#36C2A7; --z3:#F0C23A; --z4:#FF8C45; --z5:#FF4F72; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.htext{display:flex;flex-direction:column;gap:2px;min-width:0}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(22px,4vw,30px);margin:0;letter-spacing:.02em}
+h1 span{color:var(--accent)}
+.sub{color:var(--muted);margin:0;font-size:13px}
+h2{font-size:13px;letter-spacing:.12em;color:var(--muted);margin:0 0 10px;font-weight:700}
+.langbtn{appearance:none;font:inherit;font-size:13px;font-weight:700;border:2px solid var(--ink);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 14px;cursor:pointer}
+
+.top{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start}
+@media (max-width:820px){.top{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0}
+
+/* settings */
+.field{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.label{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.08em}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{appearance:none;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-weight:500;
+  padding:6px 12px;border-radius:999px;cursor:pointer;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.chip:focus-visible,.btn:focus-visible,input:focus-visible,.langbtn:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.custom{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.custom input{width:72px;font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.lvdesc{font-size:12.5px;color:var(--muted);margin:2px 0 0}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;padding:6px 0}
+.toggle input{width:18px;height:18px;accent-color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.btn{appearance:none;font:inherit;font-weight:700;border-radius:10px;padding:10px 16px;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.regen{width:100%}
+.wt{display:flex;align-items:center;gap:8px;font-size:14px}
+.wt input{width:84px;font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.hint{font-size:12px;color:var(--muted);margin:0}
+
+/* console */
+.console{display:flex;flex-direction:column;gap:16px}
+.phase{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;color:#fff;letter-spacing:.06em}
+.blockname{color:var(--muted);font-size:13px}
+.segname{font-family:var(--display);font-weight:400;font-size:clamp(26px,5.5vw,42px);line-height:1.15;margin:0;text-wrap:balance}
+.steps{margin:0;padding-left:1.4em;font-size:14px;display:flex;flex-direction:column;gap:3px}
+.steps li::marker{font-family:var(--mono);font-weight:700;color:var(--accent)}
+.readouts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:520px){.readouts{grid-template-columns:repeat(2,minmax(0,1fr))}.readouts .ro.timer{grid-column:1/-1}}
+.ro{background:var(--sunk);border-radius:12px;padding:12px 14px;min-width:0}
+.ro .k{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.1em}
+.ro .v{font-family:var(--display);font-size:clamp(30px,6vw,48px);line-height:1.1;font-variant-numeric:tabular-nums}
+.ro .s{font-size:12px;color:var(--muted);font-family:var(--mono)}
+.ro.timer .v{color:var(--accent)}
+.pips{display:flex;gap:3px;margin-top:8px}
+.pips i{flex:1;height:8px;border-radius:2px;background:var(--line)}
+.pips i.on{background:var(--ink)}
+.posbadge{display:inline-block;font-family:var(--display);font-size:clamp(20px,4vw,28px);line-height:1.2}
+.beat{display:flex;gap:6px;margin-top:8px}
+.beat i{width:12px;height:12px;border-radius:50%;background:var(--line);transition:background .05s}
+.beat i.hit{background:var(--accent)}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.controls .btn.primary{min-width:150px}
+.btn.go{font-size:18px;padding:14px 22px;min-width:220px;box-shadow:0 0 0 0 var(--accent);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 55%,transparent)}100%{box-shadow:0 0 0 16px transparent}}
+.overall{display:flex;justify-content:space-between;font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:6px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.bar b{display:block;height:100%;width:0;background:var(--accent)}
+.next{font-size:14px;color:var(--muted);border-top:1px dashed var(--line);padding-top:12px}
+.next strong{color:var(--ink)}
+.kcal{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;background:var(--sunk);border-radius:12px;padding:10px 14px}
+.kcal .k{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.1em}
+.kcal .v{font-family:var(--display);font-size:clamp(26px,5vw,36px);line-height:1.1;font-variant-numeric:tabular-nums;color:var(--accent)}
+.kcal .u{font-weight:700}
+.kcal .s{margin-left:auto;font-size:13px;color:var(--muted);font-family:var(--mono)}
+.waitbox{border:3px solid var(--accent);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.waitbox strong{font-family:var(--display);font-weight:400;font-size:20px;line-height:1.3}
+.waitbox ol{margin:0;padding-left:1.4em;font-size:14px}
+.gripmini{display:flex;align-items:center;gap:10px;border-top:2px solid var(--ink);padding-top:8px}
+.gripmini svg{width:96px;flex:none;height:auto}
+.gripmini span{font-size:12.5px;font-weight:700;line-height:1.4}
+
+/* profile */
+.chartbox{overflow-x:auto}
+#profile{display:block;width:100%;min-width:560px;height:auto}
+#profile text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted);margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+
+/* menu */
+.tablebox{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:600px}
+th{text-align:left;font-size:11px;letter-spacing:.1em;color:var(--muted);font-weight:700;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.grp td{padding-top:14px;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.08em;border-bottom:none}
+tr.cur td{background:var(--sunk)}
+tr.cur td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.zdot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:1px}
+.note{font-size:12.5px;color:var(--muted);margin:12px 0 0}
+
+/* log */
+.loghead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.loghead h2{margin:0}
+.logstatus{font-size:12.5px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:620px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{background:var(--sunk);border-radius:12px;padding:10px 14px;min-width:0}
+.stat .k{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.1em}
+.stat .v{font-family:var(--display);font-size:clamp(22px,4vw,30px);line-height:1.15;font-variant-numeric:tabular-nums}
+.stat .s{font-size:12px;color:var(--muted);font-family:var(--mono)}
+.logcols{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;margin-top:16px;align-items:start}
+@media (max-width:820px){.logcols{grid-template-columns:1fr}}
+#week{display:block;width:100%;height:auto}
+#week text{fill:var(--muted);font-family:var(--body);font-size:11px}
+#week .lbl{fill:var(--ink);font-family:var(--mono);font-size:10.5px}
+.loglist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.loglist li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.loglist .when{font-family:var(--mono);font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.loglist .what{font-weight:700}
+.loglist .nums{font-family:var(--mono);font-size:13px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;margin-left:6px;vertical-align:1px}
+.tag.ok{background:var(--z2);color:var(--surface)}
+.tag.part{background:var(--line);color:var(--ink)}
+.del{appearance:none;border:1px solid var(--line);background:none;color:var(--muted);font:inherit;font-size:12px;padding:3px 9px;border-radius:7px;cursor:pointer}
+.del.arm{border-color:var(--z5);color:var(--z5);font-weight:700}
+.empty{color:var(--muted);font-size:14px;padding:12px 0}
+.more{margin-top:10px}
+.dbx{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;padding:10px 14px;border:1px dashed var(--line);border-radius:12px;font-size:13.5px}
+.dbx span{flex:1 1 220px;min-width:0;color:var(--muted)}
+.dbx .btn{padding:7px 12px;font-size:13px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:9px 16px;border-radius:10px;font-weight:700;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
+
+/* manga */
+.hero{display:grid;grid-template-columns:minmax(0,270px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:560px){.hero{grid-template-columns:1fr}}
+.stagebox,.koma{border:3px solid var(--ink);background:var(--surface);padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.bubble{position:relative;background:var(--surface);border:2px solid var(--ink);border-radius:18px;padding:7px 13px;font-weight:700;font-size:13.5px;line-height:1.45;margin-bottom:6px}
+.bubble::after{content:"";position:absolute;left:30px;bottom:-8px;width:12px;height:12px;background:var(--surface);border-right:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(45deg)}
+.herotext{display:flex;flex-direction:column;gap:10px;min-width:0}
+.linkbtn{appearance:none;background:none;border:none;padding:0;font:inherit;font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;text-align:left;text-decoration:underline;text-underline-offset:3px}
+.mg{display:block;width:100%;height:auto;overflow:visible}
+.mg .lim{stroke:var(--ink);stroke-width:7;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.mg .torso{stroke:var(--ink);stroke-width:10;stroke-linecap:round;fill:none}
+.mg .far{stroke:var(--muted)}
+.mg .frame{stroke:var(--ink);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.mg .bar{stroke:var(--ink);stroke-width:6;stroke-linecap:round}
+.mg .saddle{stroke:var(--ink);stroke-width:7;stroke-linecap:round;fill:none}
+.mg .fly{fill:var(--sunk);stroke:var(--ink);stroke-width:4}
+.mg .inkfill{fill:var(--ink)}
+.mg .head{fill:var(--surface);stroke:var(--ink);stroke-width:3.5}
+.mg .band{stroke:var(--accent);stroke-width:4.5;fill:none;stroke-linecap:round}
+.mg .crank{stroke:var(--ink);stroke-width:4;stroke-linecap:round}
+.mg .crank.far{stroke:var(--muted)}
+.mg .fx{stroke:var(--ink);stroke-width:2;stroke-linecap:round;fill:none}
+.mg .fxa{stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.mg .dash{stroke-dasharray:4 4}
+.mg .sweat{fill:var(--surface);stroke:var(--ink);stroke-width:1.5}
+.mg .tone{fill:url(#tone)}
+.mg .tonedot{fill:var(--line)}
+.mg .sfx{font-family:var(--display);font-size:21px;fill:var(--accent);stroke:var(--ink);stroke-width:3.5;paint-order:stroke;stroke-linejoin:round}
+.mg .anno{font-family:var(--body);font-size:10.5px;font-weight:700;fill:var(--ink)}
+.mg .annoline{stroke:var(--accent);stroke-width:1.5;stroke-dasharray:3 2;fill:none}
+.mg .hl{stroke:var(--accent);stroke-width:13;stroke-linecap:round;fill:none;opacity:.38}
+.mg .hlfill{fill:var(--accent);opacity:.38}
+.mg .ground{stroke:var(--line);stroke-width:3;stroke-linecap:round}
+.mg .badge{fill:var(--ink)}
+.mg .badgetx{fill:var(--surface);font-family:var(--display);font-size:13px}
+.mg .breath{font-family:var(--body);font-size:11px;font-weight:700;fill:var(--accent)}
+.mg .hbar{stroke:var(--ink);stroke-width:9;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.mg .hstem{stroke:var(--muted);stroke-width:11;stroke-linecap:round}
+.mg .palm{fill:var(--surface);stroke:var(--ink);stroke-width:2.5}
+.mg .palm.on{fill:var(--accent)}
+.mg .finger{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.mg .fwd{fill:var(--muted);font-family:var(--body);font-size:11px;font-weight:700}
+.page{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.koma.wide{grid-column:span 2}
+.koma.full{grid-column:1/-1}
+.grouph{grid-column:1/-1;margin:14px 0 2px;font-family:var(--display);font-weight:400;font-size:18px;border-bottom:3px solid var(--ink);padding-bottom:4px}
+.grouph:first-child{margin-top:0}
+@media (max-width:820px){.page{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.page{grid-template-columns:1fr}.koma.wide{grid-column:auto}}
+.koma{margin:0}
+.koma-title{display:flex;align-items:center;gap:8px;font-family:var(--display);font-size:17px;line-height:1.2}
+.koma-title b{display:inline-grid;place-items:center;min-width:26px;height:26px;background:var(--ink);color:var(--surface);font-family:var(--mono);font-size:13px;border-radius:50%}
+.koma .mg{max-width:340px;margin:0 auto}
+.koma.wide .mg{max-width:420px}
+.koma .target{font-size:12.5px;font-weight:700;color:var(--accent);margin:0}
+.koma ol,.koma ul{margin:0;padding-left:1.3em;font-size:13.5px}
+.koma ol li::marker{font-family:var(--mono);font-weight:700;color:var(--accent)}
+.koma .meta{font-size:12.5px;color:var(--muted);margin:2px 0 0}
+.koma .tip{margin:4px 0 0;font-size:13px;font-weight:700}
+.koma .tip::before{content:"POINT";display:inline-block;background:var(--z2);color:var(--surface);font-family:var(--mono);font-size:11px;padding:0 6px;border-radius:3px;margin-right:6px}
+.koma .ng{margin:4px 0 0;font-size:13px;font-weight:700;color:var(--z5)}
+.koma .ng::before{content:"NG";display:inline-block;background:var(--z5);color:var(--surface);font-family:var(--mono);font-size:11px;padding:0 6px;border-radius:3px;margin-right:6px}
+.grips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:620px){.grips{grid-template-columns:1fr}}
+.grip{display:flex;flex-direction:column;gap:4px;min-width:0;border:2px solid var(--line);border-radius:10px;padding:8px}
+.grip .mg{max-width:240px}
+.grip strong{font-size:14px}
+.grip p{margin:0;font-size:12.5px;color:var(--muted)}
+.howlink{appearance:none;background:none;border:none;padding:0;font:inherit;color:inherit;cursor:pointer;text-align:left;text-decoration:underline dotted var(--muted);text-underline-offset:3px}
+
+/* support */
+.support{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.paypal{display:inline-flex;align-items:center;gap:6px;background:#FFC439;color:#111;font-weight:700;text-decoration:none;padding:10px 18px;border-radius:999px;border:2px solid #111}
+.support p{margin:0;font-size:12.5px;color:var(--muted);flex:1 1 240px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="htext">
+      <h1 data-t="ソロスピン・コーチ">ソロスピン・コーチ</h1>
+      <p class="sub" data-t="時間とレベルを選ぶと、ウォームアップからストレッチまでのメニューと音楽を自動で作ります">時間とレベルを選ぶと、ウォームアップからストレッチまでのメニューと音楽を自動で作ります</p>
+    </div>
+    <button class="langbtn" id="langBtn" lang="en">English</button>
+  </header>
+
+  <div class="top">
+    <section class="panel" data-ta="設定" aria-label="設定">
+      <div class="field">
+        <span class="label" data-t="トレーニング時間">トレーニング時間</span>
+        <div class="chips" id="timeChips"></div>
+        <label class="custom"><span data-t="任意">任意</span> <input id="customMin" type="number" min="10" max="90" step="5" inputmode="numeric"> <span data-t="分">分</span></label>
+      </div>
+      <div class="field">
+        <span class="label" data-t="レベル">レベル</span>
+        <div class="chips" id="levelChips"></div>
+        <p class="lvdesc" id="lvDesc"></p>
+      </div>
+      <div class="field">
+        <label class="label" for="weight" data-t="体重(カロリー計算用)">体重(カロリー計算用)</label>
+        <div class="wt"><input id="weight" type="number" min="25" max="200" step="0.5" inputmode="decimal"> kg</div>
+      </div>
+      <div class="field">
+        <span class="label" data-t="音楽(テンポはケイデンスに自動で合わせます)">音楽(テンポはケイデンスに自動で合わせます)</span>
+        <div class="chips" id="songChips"></div>
+        <p class="hint" id="songDesc"></p>
+      </div>
+      <div class="field">
+        <span class="label" data-t="サウンド">サウンド</span>
+        <label class="toggle"><span data-t="音声ガイド">音声ガイド</span><input id="tVoice" type="checkbox"></label>
+        <label class="toggle"><span data-t="カウントダウン音">カウントダウン音</span><input id="tCount" type="checkbox"></label>
+        <label class="custom" for="vol" style="margin-top:4px" data-t="音量">音量</label>
+        <input id="vol" type="range" min="0" max="1" step="0.05">
+      </div>
+      <button class="btn regen" id="regen" data-t="別パターンで作り直す">別パターンで作り直す</button>
+    </section>
+
+    <section class="panel console" aria-live="polite">
+      <div class="hero">
+        <div class="stagebox">
+          <div class="bubble" id="cue"></div>
+          <svg id="stage" class="mg" viewBox="0 -20 240 200" role="img" data-ta="いまの乗り方の図" aria-label="いまの乗り方の図"></svg>
+          <div class="gripmini" id="gripBox"><svg id="gripMini" class="mg" viewBox="20 20 200 140" aria-hidden="true"></svg><span id="gripTxt"></span></div>
+        </div>
+        <div class="herotext">
+          <div class="phase">
+            <span class="pill" id="pill"></span>
+            <span class="blockname" id="blockName"></span>
+          </div>
+          <h2 class="segname" id="segName"></h2>
+          <ol class="steps" id="steps"></ol>
+          <button class="linkbtn" id="howBtn" data-t="この動きの図解を見る">この動きの図解を見る</button>
+        </div>
+      </div>
+      <div class="waitbox" id="waitBox" hidden>
+        <strong data-t="クールダウン終了。バイクから降りましょう">クールダウン終了。バイクから降りましょう</strong>
+        <ol>
+          <li data-t="ペダルをゆっくり止め、負荷を上げてペダルを固定する">ペダルをゆっくり止め、負荷を上げてペダルを固定する</li>
+          <li data-t="ハンドルを持ったまま、片足ずつ床に下ろす">ハンドルを持ったまま、片足ずつ床に下ろす</li>
+          <li data-t="サドルの横に立ったら「ストレッチ開始」を押す">サドルの横に立ったら「ストレッチ開始」を押す</li>
+        </ol>
+        <p class="hint" data-t="ボタンを押すまでタイマーは止まっています。あわてずに降りてください。">ボタンを押すまでタイマーは止まっています。あわてずに降りてください。</p>
+      </div>
+      <div class="readouts">
+        <div class="ro timer"><div class="k" id="leftK" data-t="残り">残り</div><div class="v" id="segLeft">0:00</div><div class="s" id="segLen"></div></div>
+        <div class="ro"><div class="k" data-t="ケイデンス RPM">ケイデンス RPM</div><div class="v" id="rpm">–</div><div class="s" id="rpmRange"></div><div class="s" id="bpmTxt"></div>
+          <div class="beat" id="beat"><i></i><i></i><i></i><i></i></div></div>
+        <div class="ro"><div class="k" data-t="負荷 / 姿勢">負荷 / 姿勢</div><div class="posbadge" id="pos">–</div>
+          <div class="s" id="resTxt"></div><div class="pips" id="pips"></div></div>
+      </div>
+      <div>
+        <div class="overall"><span id="elapsed">0:00</span><span id="total">0:00</span></div>
+        <div class="bar"><b id="prog"></b></div>
+      </div>
+      <div class="kcal" aria-live="off"><span class="k" data-t="消費カロリー">消費カロリー</span><span class="v" id="kcalNow">0</span><span class="u">kcal</span><span class="s" id="kcalPlan"></span></div>
+      <div class="kcal" aria-live="off"><span class="k" data-t="推定走行距離">推定走行距離</span><span class="v" id="kmNow">0.0</span><span class="u">km</span><span class="s" id="kmPlan"></span></div>
+      <div class="controls">
+        <button class="btn primary" id="play"></button>
+        <button class="btn" id="skip" disabled data-t="次へ">次へ</button>
+        <button class="btn" id="reset" disabled data-t="リセット">リセット</button>
+      </div>
+      <div class="next" id="next"></div>
+    </section>
+  </div>
+
+  <section class="panel" data-ta="トレーニング記録" aria-label="トレーニング記録">
+    <div class="loghead"><h2 data-t="トレーニング記録">トレーニング記録</h2><span class="logstatus" id="logStatus"></span></div>
+    <div class="stats">
+      <div class="stat"><div class="k" data-t="今週の回数">今週の回数</div><div class="v" id="wkCount">0</div><div class="s" id="wkTime"></div></div>
+      <div class="stat"><div class="k" data-t="今週の消費">今週の消費</div><div class="v" id="wkKcal">0</div><div class="s">kcal</div></div>
+      <div class="stat"><div class="k" data-t="今週の距離">今週の距離</div><div class="v" id="wkKm">0.0</div><div class="s">km</div></div>
+      <div class="stat"><div class="k" data-t="累計">累計</div><div class="v" id="allCount">0</div><div class="s" id="allSub"></div></div>
+    </div>
+    <div class="logcols">
+      <div><svg id="week" viewBox="0 0 340 150" role="img" data-ta="直近7日間の消費カロリー" aria-label="直近7日間の消費カロリー"></svg></div>
+      <div><ul class="loglist" id="logList"></ul><button class="btn more" id="logMore" hidden data-t="もっと見る">もっと見る</button></div>
+    </div>
+    <div class="dbx" id="dbxRow" hidden><span id="dbxStatus"></span><button class="btn" id="dbxSync" hidden data-t="今すぐ同期">今すぐ同期</button><button class="btn" id="dbxBtn"></button></div>
+  </section>
+
+  <section class="panel" data-ta="マンガでわかる乗り方" aria-label="マンガでわかる乗り方">
+    <h2 data-t="マンガでわかる乗り方">マンガでわかる乗り方</h2>
+    <div class="page" id="howPage"></div>
+  </section>
+
+  <section class="panel">
+    <h2 data-t="強度プロフィール">強度プロフィール</h2>
+    <div class="chartbox"><svg id="profile" viewBox="0 0 1000 150" role="img" data-ta="時間ごとの強度ゾーン" aria-label="時間ごとの強度ゾーン"></svg></div>
+    <div class="legend">
+      <span><i style="background:var(--z1)"></i><span data-t="Z1 回復">Z1 回復</span></span>
+      <span><i style="background:var(--z2)"></i><span data-t="Z2 有酸素">Z2 有酸素</span></span>
+      <span><i style="background:var(--z3)"></i><span data-t="Z3 テンポ">Z3 テンポ</span></span>
+      <span><i style="background:var(--z4)"></i><span data-t="Z4 きつい">Z4 きつい</span></span>
+      <span><i style="background:var(--z5)"></i><span data-t="Z5 全力">Z5 全力</span></span>
+      <span><i style="background:var(--z0)"></i><span data-t="降車ストレッチ">降車ストレッチ</span></span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 data-t="メニュー">メニュー</h2>
+    <div class="tablebox"><table>
+      <thead><tr><th class="num" data-t="開始">開始</th><th data-t="内容">内容</th><th data-t="姿勢">姿勢</th><th class="num">RPM</th><th class="num" data-t="負荷">負荷</th><th class="num" data-t="時間">時間</th><th class="num">kcal</th><th class="num">km</th></tr></thead>
+      <tbody id="menu"></tbody>
+    </table></div>
+    <p class="note" data-t="カロリーと距離は推定値です。距離は、各区間の強度から出力(ワット)を見積もり、平地を一般的なロードバイクで走った場合の速度に換算しています。坂の区間も平地換算です。負荷は10段階の目安です。バイクの抵抗ダイヤルに合わせて調整してください。始める前と途中に水分をとり、めまい・胸の痛みがあればすぐに中止してください。">カロリーと距離は推定値です。距離は、各区間の強度から出力(ワット)を見積もり、平地を一般的なロードバイクで走った場合の速度に換算しています。坂の区間も平地換算です。負荷は10段階の目安です。バイクの抵抗ダイヤルに合わせて調整してください。始める前と途中に水分をとり、めまい・胸の痛みがあればすぐに中止してください。</p>
+  </section>
+
+  <section class="panel support">
+    <a class="paypal" id="paypal" href="https://paypal.me/marathonBGM" target="_blank" rel="noopener" data-t="☕ このアプリを応援する(PayPal)">☕ このアプリを応援する(PayPal)</a>
+    <p data-t="応援は任意です。いただいた応援は、アプリの改良と音楽づくりに使わせていただきます。">応援は任意です。いただいた応援は、アプリの改良と音楽づくりに使わせていただきます。</p>
+  </section>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" class="mg"><defs>
+  <pattern id="tone" width="6" height="6" patternUnits="userSpaceOnUse"><circle class="tonedot" cx="3" cy="3" r="1.3"/></pattern>
+</defs></svg>
+<script>
+(function(){
+'use strict';
+/* ================= config ================= */
+// Dropbox 連携: https://www.dropbox.com/developers/apps で作成したアプリの App key を入れてください(空なら連携は表示されません)
+const DROPBOX_APP_KEY='';
+const DBX_PATH='/spin-log.json';
+
+const $=s=>document.querySelector(s);
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const r30=x=>Math.max(30,Math.round(x/30)*30);
+const fmt=s=>{s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v);return true}catch(e){return false}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+
+/* ================= i18n ================= */
+let LANG=(()=>{const v=store.get('jibun.lang');if(v==='ja'||v==='en')return v;return (navigator.language||'ja').toLowerCase().startsWith('ja')?'ja':'en'})();
+const EN=/*EN*/{"ソロスピン・コーチ": "Solo Spin Coach", "ウォームアップ": "Warm-up", "メイン {n}: {b}": "Main {n}: {b}", "つなぎ": "Bridge", "クールダウン": "Cool-down", "降りてストレッチ": "Off the bike: stretch", "サドル=腰骨の高さ": "Saddle = hip-bone height", "ハンドル=サドルと同じ〜少し上": "Bars = saddle height or a bit higher", "一番下で膝が": "Knee slightly bent", "少し曲がる": "at the bottom", "吐きながら伸ばす": "Exhale and ease in", "吐いて…": "Breathe out…", "吸って…": "Breathe in…", "左": "L", "右": "R", "↑ 前": "↑ Front", "目安": "Target", "負荷": "Resistance", "使う場面": "Use for", "親指はハンドルに軽くかけ、手首はまっすぐに保つ": "Rest your thumbs lightly on the bar and keep your wrists straight", "伸びる場所": "Stretches", "左右それぞれ20〜30秒。反動をつけず、息を吐きながらじわっと伸ばす": "20–30 seconds per side. No bouncing; ease deeper as you breathe out", "20〜30秒。反動をつけず、息を吐きながらじわっと伸ばす": "20–30 seconds. No bouncing; ease deeper as you breathe out", "握り": "Grip", "いま 約{v}km/h": "now ≈{v} km/h", "予定 約{v} km": "plan ≈{v} km", "予定 約{v} kcal(体重{w}kg)": "plan ≈{v} kcal ({w} kg)", "{m}分": "{m} min", "まず右側から。": "Start with your right side. ", "回転{r}前後、負荷{l}。": "Cadence about {r}, resistance {l}. ", "クールダウン終了です。ペダルをゆっくり止めて、バイクから降りてください。準備ができたら、ストレッチ開始ボタンを押してください。": "Cool-down complete. Slow the pedals to a stop and get off the bike. When you are ready, press Start stretching.", "一時停止": "Pause", "ストレッチ開始": "Start stretching", "もう一度": "Again", "再開": "Resume", "スタート": "Start", "ストレッチ": "Stretch", "ストレッチ中": "Stretching", "右側": "Right side", "片側 {s}秒": "{s} s per side", "{s}秒": "{s} s", "目標 {a}–{b}": "target {a}–{b}", "負荷 {r} / 10": "resistance {r} / 10", "この区間 {t}": "this block {t}", "これが最後の区間です": "This is the last block", "次は <strong>バイクを降りてストレッチ</strong>(「ストレッチ開始」を押すまで待ちます)": "Next: <strong>get off the bike and stretch</strong> (the timer waits until you press Start stretching)", "次は <strong>{n}</strong>": "Next: <strong>{n}</strong> ", "降車": "Off bike", "バイクから降りましょう": "Time to get off the bike", "あわてずに。止まってから降りよう": "No rush. Stop first, then get off.", "タイマー停止中": "timer paused", "準備": "Ready", "{m}分・{l}メニュー": "{m}-min {l} ride", "バイクに乗り、サドルの高さを確認したらスタートを押してください。": "Get on the bike, check the saddle height, then press Start.", "最初にサドルとハンドルの高さを確認(下の「乗る前のセッティング」参照)": "Check the saddle and bar height first (see “Setting up the bike” below)", "飲み物とタオルを手の届く所に置く": "Keep a drink and a towel within reach", "音楽と音声ガイドを使うときは、音量を確認する": "Check the volume if you use music and voice guidance", "最初は <strong>{n}</strong>": "First: <strong>{n}</strong> ", "おつかれさまでした。消費カロリーは約{k}キロカロリー、走行距離は約{d}キロメートルです。水分をとって休みましょう。": "Great work. You burned about {k} calories and covered about {d} kilometers. Drink some water and rest.", "完了": "Done", "おつかれさまでした": "Great work", "{m}分のトレーニングを完了しました。消費カロリーは約{k}kcal、推定走行距離は約{d}kmです。水分をとって休みましょう。": "You finished your {m}-minute ride: about {k} kcal and an estimated {d} km. Drink some water and rest.", "反対側に替えます。左側をゆっくり伸ばします。": "Switch sides. Now slowly stretch your left side.", "左側": "Left side", "あと10秒でクールダウン終了です。ペダルを止める準備をしましょう。": "Ten seconds left in the cool-down. Get ready to stop pedaling.", "あと10秒。次は{n}。": "Ten seconds. Next: {n}.", "座る": "Sit", "立つ": "Stand", "この端末に保存できませんでした(プライベートモードでは保存されません)": "Couldn't save on this device (private browsing doesn't keep data)", "記録しました": "Saved", "途中までの記録を残しました": "Saved your partial ride", "{n}回": "{n}", "合計 {m}分": "{m} min total", "直近7日間の消費カロリー": "Calories, last 7 days", "今日": "Today", "まだ記録はありません。トレーニングを最後まで終えるか、1分以上漕いでからリセットすると、ここに残ります。": "No rides yet. Finish a workout, or ride for at least a minute and press Reset, and it will appear here.", "完走": "Finished", "途中まで": "Partial", "削除": "Delete", "本当に削除": "Confirm delete", "Dropboxへの接続をキャンセルしました": "Dropbox connection cancelled", "Dropboxに接続しました": "Connected to Dropbox", "このスマートフォン(ブラウザ)に保存しています": "Saved on this phone (in this browser)", "Dropboxにログインすると、記録をDropboxにも保存できます": "Sign in to Dropbox to save your rides there too", "Dropboxと同期しています…": "Syncing with Dropbox…", "Dropboxに接続できませんでした。記録はこの端末に保存しています": "Couldn't reach Dropbox. Your rides are saved on this device.", "Dropboxに保存済み({t})": "Saved to Dropbox ({t})", "Dropboxに接続しています": "Connected to Dropbox", "接続を解除": "Disconnect", "Dropboxに接続": "Connect Dropbox", "この端末とDropboxに保存しています": "Saved on this device and in Dropbox", "Dropboxとの接続を解除しました": "Disconnected from Dropbox", "Dropboxに接続できませんでした。時間をおいてもう一度お試しください": "Couldn't connect to Dropbox. Please try again later.", "時間とレベルを選ぶと、ウォームアップからストレッチまでのメニューと音楽を自動で作ります": "Pick a time and level, and get a full ride from warm-up to stretches, with music to match", "設定": "Settings", "トレーニング時間": "Workout length", "任意": "Custom", "分": "min", "レベル": "Level", "体重(カロリー計算用)": "Body weight (for calories)", "音楽(テンポはケイデンスに自動で合わせます)": "Music (tempo follows your cadence)", "サウンド": "Sound", "音声ガイド": "Voice guidance", "カウントダウン音": "Countdown beeps", "音量": "Volume", "別パターンで作り直す": "Make a different ride", "いまの乗り方の図": "Current position", "この動きの図解を見る": "See how to do this", "クールダウン終了。バイクから降りましょう": "Cool-down done. Time to get off the bike", "ペダルをゆっくり止め、負荷を上げてペダルを固定する": "Slow the pedals to a stop, then turn up the resistance to lock them", "ハンドルを持ったまま、片足ずつ床に下ろす": "Keep hold of the bar and lower one foot at a time", "サドルの横に立ったら「ストレッチ開始」を押す": "Once you're standing beside the saddle, press Start stretching", "ボタンを押すまでタイマーは止まっています。あわてずに降りてください。": "The timer stays paused until you press the button. Take your time.", "残り": "Time left", "ケイデンス RPM": "Cadence RPM", "負荷 / 姿勢": "Resistance / position", "消費カロリー": "Calories", "推定走行距離": "Est. distance", "次へ": "Skip", "リセット": "Reset", "トレーニング記録": "Ride log", "今週の回数": "Rides this week", "今週の消費": "Burned this week", "今週の距離": "Distance this week", "累計": "All time", "もっと見る": "Show more", "今すぐ同期": "Sync now", "マンガでわかる乗り方": "How to ride, in pictures", "強度プロフィール": "Intensity profile", "時間ごとの強度ゾーン": "Intensity zones over time", "Z1 回復": "Z1 Recovery", "Z2 有酸素": "Z2 Aerobic", "Z3 テンポ": "Z3 Tempo", "Z4 きつい": "Z4 Hard", "Z5 全力": "Z5 All-out", "降車ストレッチ": "Off-bike stretch", "メニュー": "Ride plan", "開始": "Start", "内容": "Block", "姿勢": "Position", "時間": "Time", "カロリーと距離は推定値です。距離は、各区間の強度から出力(ワット)を見積もり、平地を一般的なロードバイクで走った場合の速度に換算しています。坂の区間も平地換算です。負荷は10段階の目安です。バイクの抵抗ダイヤルに合わせて調整してください。始める前と途中に水分をとり、めまい・胸の痛みがあればすぐに中止してください。": "Calories and distance are estimates. Distance converts each block's effort into watts, then into the speed of a typical road bike on flat ground (climbs count as flat). Resistance uses a 1–10 guide; match it to your bike's dial. Drink water before and during your ride, and stop at once if you feel dizzy or have chest pain.", "☕ このアプリを応援する(PayPal)": "☕ Support this app (PayPal)", "応援は任意です。いただいた応援は、アプリの改良と音楽づくりに使わせていただきます。": "Support is optional. It goes toward improving the app and making music.", "{n}拍ずつ": "{n} beats each", "上級メニュー": "Advanced"};
+function T(k,v){let s=(LANG==='en'&&EN[k]!=null)?EN[k]:k;if(v)s=s.replace(/\{(\w+)\}/g,(m,n)=>v[n]!=null?v[n]:m);return s}
+const L=o=>o==null?'':(typeof o==='string'?o:(o[LANG]!=null?o[LANG]:o.ja));
+function applyStatic(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll('[data-t]').forEach(el=>{el.textContent=T(el.dataset.t)});
+  document.querySelectorAll('[data-ta]').forEach(el=>{el.setAttribute('aria-label',T(el.dataset.ta))});
+  const b=$('#langBtn');b.textContent=LANG==='ja'?'English':'日本語';b.lang=LANG==='ja'?'en':'ja';
+  document.title=T('ソロスピン・コーチ');
+}
+
+/* ================= content ================= */
+const POS={
+  seat:{ja:'座',en:'Seated'},stand:{ja:'立',en:'Standing'},jump:{ja:'立↔座',en:'Stand↔Sit'},off:{ja:'降車',en:'Off bike'}
+};
+const TYPES={
+  warm:{n:{ja:'ウォームアップ',en:'Warm-up'},pos:'seat',grip:1,rpm:[80,90],res:2,z:1,
+    cue:{ja:'軽い負荷で、呼吸を整えながら回します',en:'Light resistance. Settle your breathing as you spin.'},
+    steps:{ja:['サドルに深く座り、背すじを軽く伸ばす','負荷は軽め。脚が自然に回る重さにする','鼻から吸って口から吐き、呼吸のリズムを作る'],
+           en:['Sit well back on the saddle with a tall, relaxed back','Keep resistance light so your legs turn freely','Breathe in through your nose and out through your mouth']}},
+  build:{n:{ja:'ビルドアップ',en:'Build'},pos:'seat',grip:1,rpm:[85,95],res:3,z:2,
+    cue:{ja:'少しずつ負荷を上げて体を温めます',en:'Add resistance little by little to warm up.'},
+    steps:{ja:['30秒ごとに負荷を半段ずつ上げるイメージ','回転数は落とさずにキープ','うっすら汗ばんできたらOK'],
+           en:['Add about half a step of resistance every 30 seconds','Hold your cadence as it gets heavier','A light sweat means you are warming up well']}},
+  spinup:{n:{ja:'スピンアップ',en:'Spin-up'},pos:'seat',grip:1,rpm:[95,105],res:3,z:2,
+    cue:{ja:'軽い負荷のまま、回転数だけ上げます',en:'Keep it light and raise only your cadence.'},
+    steps:{ja:['負荷は軽いまま、足を速く回す','お尻がサドルの上で跳ねない速さまで','かかとを下げすぎず、円を描くように'],
+           en:['Keep resistance light and spin faster','Go only as fast as you can without bouncing','Pedal in smooth circles with level heels']}},
+  flat:{n:{ja:'シーテッドフラット',en:'Seated flat'},pos:'seat',grip:1,rpm:[85,100],res:4,z:2,
+    cue:{ja:'肩の力を抜いて、一定のリズムで回します',en:'Relax your shoulders and keep an even rhythm.'},
+    steps:{ja:['サドルのやや後ろに座り、骨盤を立てる','ハンドルは添えるだけ。肘は軽く曲げる','12時で前に押し、6時で後ろに引くつもりで回す'],
+           en:['Sit slightly back on the saddle, pelvis upright','Rest your hands lightly with soft elbows','Push forward at 12 o\'clock and pull back at 6 o\'clock']}},
+  tempo:{n:{ja:'テンポ走',en:'Tempo'},pos:'seat',grip:2,rpm:[90,100],res:5,z:3,
+    cue:{ja:'会話はやっと、の強さを保ちます',en:'Hold an effort where talking is just possible.'},
+    steps:{ja:['会話が途切れ途切れになる強さが目安','上半身は動かさず、脚だけで回す','苦しくなったら負荷を半段下げて回転を保つ'],
+           en:['Aim for an effort where you can only speak in short phrases','Keep your upper body still and let your legs work','If it gets too hard, drop half a step and hold cadence']}},
+  run:{n:{ja:'スタンディングフラット',en:'Standing flat'},pos:'stand',grip:2,rpm:[80,95],res:5,z:3,
+    cue:{ja:'腰をサドルの真上に置き、ハンドルは軽く握ります',en:'Hips over the saddle, a light grip on the bars.'},
+    steps:{ja:['負荷を1〜2段上げてから立ち上がる','腰はサドルの真上、太ももがサドル先端に触れる位置','体重は脚に乗せ、ハンドルは軽く握るだけ'],
+           en:['Add 1–2 steps of resistance before you stand','Keep your hips above the saddle, thighs brushing its nose','Carry your weight on your legs; hold the bars lightly']}},
+  climbS:{n:{ja:'シーテッドクライム',en:'Seated climb'},pos:'seat',grip:2,rpm:[60,75],res:7,z:3,
+    cue:{ja:'重い坂を座ったまま、踏み込みと引き上げを意識',en:'A heavy hill, seated. Push down and pull up.'},
+    steps:{ja:['負荷をしっかり上げ、坂道をイメージ','お尻をサドルの後ろに引き、上体を少し起こす','かかとを少し下げて、ペダルを下に押し下げる'],
+           en:['Turn the resistance up and picture a steep hill','Slide back on the saddle and lift your chest a little','Drop your heels slightly and drive the pedals down']}},
+  climbT:{n:{ja:'スタンディングクライム',en:'Standing climb'},pos:'stand',grip:3,rpm:[55,70],res:8,z:4,
+    cue:{ja:'体重をペダルに乗せて、坂を一歩ずつ上ります',en:'Put your weight into the pedals, one step at a time.'},
+    steps:{ja:['重い負荷のまま立ち上がり、ハンドル先端(ポジション3)を握る','腰はサドルより前、上体は前傾','左右の脚に体重を交互に乗せ、階段を上るように'],
+           en:['Stand up on heavy resistance and hold the bar ends (position 3)','Move your hips ahead of the saddle and lean forward','Shift your weight from leg to leg like climbing stairs']}},
+  jump:{n:{ja:'ジャンプ',en:'Jumps'},pos:'jump',grip:2,rpm:[80,90],res:5,z:3,jump:true,
+    cue:{ja:'4拍ごとに立つ・座るを繰り返します',en:'Stand for 4 beats, sit for 4 beats.'},
+    steps:{ja:['高い合図の音で、4拍かけて立ち上がる','次の合図の音で、そっとサドルに座る','立つ・座るの間も脚は止めない'],
+           en:['On the high cue tone, rise over 4 beats','On the next cue tone, sit back down gently','Keep your legs turning the whole time']}},
+  jump2:{n:{ja:'2拍ジャンプ',en:'2-beat jumps'},pos:'jump',grip:2,rpm:[80,90],res:6,z:4,jump:true,beats:2,adv:true,
+    cue:{ja:'2拍ごとに立つ・座るを素早く切り替えます',en:'Switch between standing and sitting every 2 beats.'},
+    steps:{ja:['負荷を1段上げ、体がぶれない重さにする','合図の音ごとに、2拍で立つ・2拍で座る','太ももで体を持ち上げ、上半身はハンドルの上で静かに保つ'],
+           en:['Add one step of resistance so your body stays steady','On each cue tone, stand for 2 beats, then sit for 2 beats','Lift with your thighs and keep your upper body quiet over the bars']}},
+  climbT2:{n:{ja:'急坂スタンディングクライム',en:'Heavy standing climb'},pos:'stand',grip:3,rpm:[50,62],res:9,z:5,adv:true,
+    cue:{ja:'さらに重い急坂。ゆっくり大きく、体重で踏み下ろします',en:'An even steeper hill. Slow, big strokes driven by your body weight.'},
+    steps:{ja:['スタンディングクライムからさらに負荷を1〜2段上げる','ハンドル先端を握り、体重を真下のペダルに落とす','回転が50を切りそうなら負荷を半段戻す(膝を守る)'],
+           en:['Add 1–2 more steps of resistance than a standing climb','Hold the bar ends and drop your weight straight onto the pedal','If cadence drops below 50, back off half a step to protect your knees']}},
+  sprint:{n:{ja:'スプリント',en:'Sprint'},pos:'seat',grip:2,rpm:[105,120],res:6,z:5,
+    cue:{ja:'全力で回します。上体を揺らさない',en:'All-out spin. Keep your upper body quiet.'},
+    steps:{ja:['負荷は中くらいのまま、回転を最大に','ハンドルをしっかり握り、上体を固定','お尻が跳ねたら負荷を少し上げる'],
+           en:['Keep resistance moderate and spin as fast as you can','Grip firmly and hold your upper body still','If you bounce, add a little resistance']}},
+  recover:{n:{ja:'リカバリー',en:'Recovery'},pos:'seat',grip:1,rpm:[75,85],res:2,z:1,
+    cue:{ja:'負荷を下げて、呼吸を戻します',en:'Ease off and get your breath back.'},
+    steps:{ja:['負荷を軽くして、脚はゆっくり回し続ける','上体を起こし、肩を回してほぐす','水分補給はこのタイミングで'],
+           en:['Lighten the resistance and keep your legs turning','Sit tall and roll your shoulders','This is the time to drink some water']}},
+  cool:{n:{ja:'クールダウン',en:'Cool-down'},pos:'seat',grip:1,rpm:[70,80],res:1,z:1,
+    cue:{ja:'ゆっくり回して心拍を下げます',en:'Spin easy to bring your heart rate down.'},
+    steps:{ja:['一番軽い負荷で、ゆっくり回す','深呼吸をくり返して心拍を下げる','終わったらペダルを止め、足をついてから降りる'],
+           en:['Use the lightest resistance and spin slowly','Take slow, deep breaths to lower your heart rate','When it ends, stop the pedals and put a foot down before getting off']}}
+};
+const STR={
+  quad:{n:{ja:'太もも前のストレッチ',en:'Quad stretch'},sides:true,sfx:{ja:'のび〜',en:'Stretch'},
+    target:{ja:'太ももの前(大腿四頭筋)',en:'Front of the thigh (quadriceps)'},
+    cue:{ja:'サドルにつかまり、足首を持ってかかとをお尻に近づけます',en:'Hold the saddle, grab your ankle and draw your heel toward your glutes.'},
+    steps:{ja:['片手でサドルをつかみ、まっすぐ立つ','反対の手で同じ側の足首を持つ','かかとをお尻に近づけ、膝は真下に向ける'],
+           en:['Hold the saddle with one hand and stand tall','Grab the ankle on the same side as your free hand','Draw your heel toward your glutes, knee pointing down']},
+    tip:{ja:'腰を反らさず、お腹に軽く力を入れる',en:'Don\'t arch your back; brace your stomach lightly'}},
+  calf:{n:{ja:'ふくらはぎのストレッチ',en:'Calf stretch'},sides:true,sfx:{ja:'ぐぐっ',en:'Press'},
+    target:{ja:'ふくらはぎ(下腿三頭筋)',en:'Calves'},
+    cue:{ja:'サドルに手をつき、後ろ脚のかかとを床に押しつけます',en:'Hands on the saddle; press your back heel into the floor.'},
+    steps:{ja:['サドルに両手をつき、片脚を大きく後ろへ引く','後ろ脚の膝を伸ばし、かかとを床につける','前の膝を曲げ、体重をゆっくり前へ移す'],
+           en:['Put both hands on the saddle and step one leg far back','Straighten the back knee and keep that heel on the floor','Bend your front knee and slowly shift your weight forward']},
+    tip:{ja:'後ろ脚のつま先はまっすぐ前に向ける',en:'Point your back toes straight ahead'}},
+  ham:{n:{ja:'太もも裏のストレッチ',en:'Hamstring stretch'},sides:true,sfx:{ja:'じわ〜',en:'Ease'},
+    target:{ja:'太ももの裏(ハムストリングス)',en:'Back of the thigh (hamstrings)'},
+    cue:{ja:'片脚のかかとを前に出し、背すじを伸ばしたまま上体を前に倒します',en:'Heel forward, back straight, hinge forward from the hips.'},
+    steps:{ja:['片脚を一歩前に出し、かかとを床につけてつま先を上げる','後ろの膝を軽く曲げ、両手を前の太ももに置く','背中を丸めず、お尻を後ろに引くように上体を倒す'],
+           en:['Step one foot forward, heel down, toes up','Bend your back knee slightly and rest your hands on the front thigh','Keep your back flat and hinge forward by pushing your hips back']},
+    tip:{ja:'背中を丸めると腰に負担がかかる',en:'Rounding your back strains your lower back'}},
+  glute:{n:{ja:'お尻のストレッチ',en:'Glute stretch'},sides:true,sfx:{ja:'ぐーっ',en:'Sink'},
+    target:{ja:'お尻(大殿筋・梨状筋)',en:'Glutes and hips'},
+    cue:{ja:'サドルにつかまり、足首を反対の膝にのせて腰を落とします',en:'Hold the saddle, rest one ankle on the other knee and sit back.'},
+    steps:{ja:['サドルを両手でしっかりつかむ','片脚の足首を反対の膝の上にのせる(数字の「4」の形)','椅子に座るように、お尻をゆっくり後ろへ下げる'],
+           en:['Hold the saddle firmly with both hands','Rest one ankle on the opposite knee (a figure 4)','Slowly sit your hips back as if onto a chair']},
+    tip:{ja:'ふらつくときは浅めに。膝が痛むときは中止',en:'Go shallow if you wobble; stop if your knee hurts'}},
+  back:{n:{ja:'腰・背中のストレッチ',en:'Back stretch'},sides:false,sfx:{ja:'ぐい〜ん',en:'Reach'},
+    target:{ja:'腰と背中(広背筋・脊柱起立筋)',en:'Lower and upper back'},
+    cue:{ja:'サドルに手をつき、後ろへ下がって背中を床と平行に伸ばします',en:'Hands on the saddle; walk back and lengthen your back level with the floor.'},
+    steps:{ja:['サドルの先に両手をのせ、2〜3歩後ろへ下がる','腕を伸ばしたまま、上体を前に倒す','お尻を後ろに突き出し、背中と腕を一直線にする'],
+           en:['Rest both hands on the front of the saddle and step back 2–3 paces','Keep your arms straight and fold forward','Push your hips back so your back and arms form one line']},
+    tip:{ja:'首の力を抜き、頭は腕の間に',en:'Relax your neck and let your head sit between your arms'}},
+  chest:{n:{ja:'胸・肩のストレッチ',en:'Chest & shoulder stretch'},sides:false,sfx:{ja:'すっきり',en:'Open'},
+    target:{ja:'胸と肩の前(大胸筋・三角筋)',en:'Chest and front of the shoulders'},
+    cue:{ja:'背中の後ろで手を組み、胸を開いて腕を持ち上げます',en:'Clasp your hands behind your back, open your chest and lift your arms.'},
+    steps:{ja:['足を腰幅に開いてまっすぐ立つ','背中の後ろで両手を組む','肩甲骨を寄せ、胸を開きながら腕を持ち上げる'],
+           en:['Stand tall with your feet hip-width apart','Clasp your hands behind your back','Squeeze your shoulder blades and lift your arms as your chest opens']},
+    tip:{ja:'前かがみで丸まった胸と肩をほぐす',en:'Undoes the hunched riding posture'}}
+};
+const STR_ORDER=['quad','calf','ham','glute','back','chest'];
+const B={
+  A:{n:{ja:'巡航',en:'Cruise'},s:[['flat',120],['tempo',60],['recover',60]]},
+  B:{n:{ja:'坂道',en:'Hill'},s:[['climbS',90],['recover',60]]},
+  C:{n:{ja:'立ち漕ぎ',en:'Standing'},s:[['run',60],['flat',60],['recover',60]]},
+  D:{n:{ja:'ジャンプ',en:'Jumps'},s:[['jump',60],['recover',60]]},
+  E:{n:{ja:'スプリント×3',en:'Sprints ×3'},s:[['sprint',20],['recover',40],['sprint',20],['recover',40],['sprint',20],['recover',60]]},
+  F:{n:{ja:'ヒルクライム',en:'Hill climb'},s:[['climbS',60],['climbT',60],['recover',60]]},
+  G:{n:{ja:'ジャンプ&ラン',en:'Jumps & run'},s:[['jump',60],['run',60],['recover',60]]},
+  H:{n:{ja:'タバタ(20秒×8)',en:'Tabata (20s ×8)'},fixed:true,s:[].concat(...Array.from({length:8},()=>[['sprint',20],['recover',10]])).concat([['recover',60]])},
+  I:{n:{ja:'坂からのアタック',en:'Climb & attack'},s:[['climbS',60],['climbT',90],['sprint',20],['recover',60]]},
+  J:{n:{ja:'テンポ持続',en:'Sustained tempo'},s:[['tempo',180],['recover',60]]},
+  K:{n:{ja:'2拍ジャンプ',en:'2-beat jumps'},s:[['jump2',40],['recover',40],['jump2',40],['recover',60]]},
+  L:{n:{ja:'急坂クライム',en:'Steep climb'},s:[['climbS',60],['climbT2',80],['recover',60]]}
+};
+const LV={
+  beg:{n:{ja:'初級',en:'Beginner'},d:{ja:'運動に慣れていない方向け。休憩を長めにとり、負荷は控えめです。',en:'For people new to exercise. Longer rests and lighter resistance.'},res:-1,rpm:-5,wf:.75,rf:1.4,pool:['A','B','C','D','E']},
+  mid:{n:{ja:'中級',en:'Intermediate'},d:{ja:'週1〜2回運動している方向け。坂・ジャンプ・スプリントを組み合わせます。',en:'For people who exercise once or twice a week. Mixes hills, jumps and sprints.'},res:0,rpm:0,wf:1,rf:1,pool:['A','B','C','D','E','F','G']},
+  adv:{n:{ja:'上級',en:'Advanced'},d:{ja:'しっかり追い込みたい方向け。タバタや長めの高強度が入ります。',en:'For a hard workout. Includes Tabata and longer high-intensity work.'},res:1,rpm:5,wf:1.25,rf:.75,pool:['B','C','E','F','G','H','I','J','K','L']}
+};
+const GRIPS={
+  1:{n:{ja:'ポジション1 中央',en:'Position 1 · Center'},how:{ja:'ハンドル中央に手のひらを下向きにのせる',en:'Palms down on the center of the bar'},
+     use:{ja:'座って軽く漕ぐとき(ウォームアップ・フラット・リカバリー)',en:'Easy seated riding (warm-up, flat, recovery)'}},
+  2:{n:{ja:'ポジション2 肩幅',en:'Position 2 · Shoulder width'},how:{ja:'肩幅のカーブを、親指を内側にして握る',en:'Hold the bends at shoulder width, thumbs inside'},
+     use:{ja:'立ち漕ぎ・ジャンプ・シーテッドクライム・スプリント',en:'Standing, jumps, seated climbs, sprints'}},
+  3:{n:{ja:'ポジション3 先端',en:'Position 3 · Bar ends'},how:{ja:'ハンドル先端を、指を外側に回して握る',en:'Wrap your fingers around the bar ends'},
+     use:{ja:'スタンディングクライム(深く前傾するとき)',en:'Standing climbs with a deep forward lean'}}
+};
+const TIMES=[15,20,30,45,60];
+
+/* ================= state ================= */
+const st={T:30,level:'mid',seed:1,segs:[],total:0,running:false,started:false,done:false,waiting:false,stretchGo:false,acc:0,t0:0,idx:-1,
+  weight:60,song:'marathon',voice:true,count:true,vol:.7,lastSec:null,said10:-1,sideSaid:-1};
+(function loadPrefs(){let s=null;try{s=JSON.parse(store.get('spin.prefs')||store.get('soloSpin')||'null')}catch(e){}
+  if(!s)return;Object.assign(st,{T:s.T||30,level:LV[s.level]?s.level:'mid',voice:s.voice??true,count:s.count??true,vol:s.vol??.7,weight:s.weight||60,song:s.song||(s.rhythm===false?'off':'marathon')})})();
+st.seed=Math.floor(Math.random()*1e9);
+function save(){store.set('spin.prefs',JSON.stringify({T:st.T,level:st.level,song:st.song,voice:st.voice,count:st.count,vol:st.vol,weight:st.weight}))}
+
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+/* ================= menu generation ================= */
+function seg(type,dur,blk,Lv){
+  const t=TYPES[type];
+  const rpm=[t.rpm[0]+Lv.rpm,t.rpm[1]+Lv.rpm];
+  const res=clamp(t.res+(t.z>=2?Lv.res:0),1,10);
+  return {type,dur,blk,rpm,res,z:t.z,jump:!!t.jump,beats:t.beats||4};
+}
+function scaleBlock(key,Lv){
+  const b=B[key];
+  return b.s.map(([type,d])=>{
+    if(b.fixed)return [type,d];
+    const f=type==='recover'?Lv.rf:Lv.wf;
+    let v=d*f;v=v<60?Math.max(10,Math.round(v/5)*5):Math.round(v/10)*10;
+    return [type,v];
+  });
+}
+function generate(){
+  const Lv=LV[st.level],r=rng(st.seed),total=st.T*60,out=[];
+  const add=(t,d,blk)=>{if(d>0)out.push(seg(t,d,blk,Lv))};
+  const wu=r30(clamp(total*.15,120,600)),cdb=r30(clamp(total*.08,90,300));
+  const hold=total>=2700?30:20,target=clamp(total*.1,120,330),strs=[];let ssum=0;
+  for(const id of STR_ORDER){if(ssum>=target)break;const d=STR[id].sides?hold*2:Math.round(hold*1.5/10)*10;strs.push([id,d]);ssum+=d}
+  const W={k:'warm'};
+  if(wu>=300){const a=r30(wu*.4),b=r30(wu*.35);add('warm',a,W);add('build',b,W);add('spinup',wu-a-b,W)}
+  else{const a=r30(wu*.55);add('warm',a,W);add('build',wu-a,W)}
+  let rem=total-wu-cdb-ssum,last=null,n=0;
+  while(rem>=60){
+    const fits=Lv.pool.filter(k=>k!==last&&scaleBlock(k,Lv).reduce((s,x)=>s+x[1],0)<=rem);
+    if(!fits.length)break;
+    const k=fits[Math.floor(r()*fits.length)];n++;
+    const sb=scaleBlock(k,Lv),blk={k:'main',n,b:k};
+    sb.forEach(([t,d])=>add(t,d,blk));
+    rem-=sb.reduce((s,x)=>s+x[1],0);last=k;
+  }
+  if(rem>0){const p=out[out.length-1];if(p.type==='recover'||rem<30)p.dur+=rem;else add('flat',rem,{k:'link'})}
+  add('cool',cdb,{k:'cool'});
+  const S={k:'str'};
+  strs.forEach(([id,d])=>out.push({type:'stretch',sid:id,sides:STR[id].sides,dur:d,blk:S,rpm:null,res:0,z:0}));
+  let t=0;out.forEach(s=>{s.start=t;t+=s.dur});
+  st.segs=out;st.total=t;
+}
+const segName=s=>s.type==='stretch'?L(STR[s.sid].n):L(TYPES[s.type].n);
+const segCue=s=>s.type==='stretch'?L(STR[s.sid].cue):L(TYPES[s.type].cue);
+const segSteps=s=>s.type==='stretch'?L(STR[s.sid].steps):L(TYPES[s.type].steps);
+const segPos=s=>s.type==='stretch'?L(POS.off):L(POS[TYPES[s.type].pos]);
+function blockName(s){const b=s.blk;
+  if(b.k==='warm')return T('ウォームアップ');
+  if(b.k==='main')return T('メイン {n}: {b}',{n:b.n,b:L(B[b.b].n)});
+  if(b.k==='link')return T('つなぎ');
+  if(b.k==='cool')return T('クールダウン');
+  return T('降りてストレッチ');
+}
+const mid=s=>s.rpm?Math.round((s.rpm[0]+s.rpm[1])/2):60;
+
+/* ================= drawing: riding ================= */
+const KIND={warm:'seat',build:'seat',spinup:'seat',flat:'seat',tempo:'seat',cool:'recover',recover:'recover',run:'stand',climbS:'climbS',climbT:'climbT',climbT2:'climbT',jump:'jump',jump2:'jump',sprint:'sprint'};
+const SFX={warm:{ja:'スイスイ',en:'Easy'},build:{ja:'じわっ',en:'Build'},spinup:{ja:'クルクル',en:'Spin'},flat:{ja:'シャーッ',en:'Whirr'},tempo:{ja:'グングン',en:'Go go'},
+  run:{ja:'タッタッ',en:'Step'},climbS:{ja:'グッ',en:'Push'},climbT:{ja:'グイッ',en:'Heave'},jump:{ja:'ピョン',en:'Up!'},jump2:{ja:'ピョンピョン',en:'Up! Up!'},climbT2:{ja:'ズシッ',en:'Grind'},sprint:{ja:'ギュイーン',en:'Zoom'},recover:{ja:'ふぅ〜',en:'Phew'},cool:{ja:'ゆるり',en:'Easy'}};
+const POSES={
+  seat:{hip:[128,76],sh:[96,46],hand:[62,70]},
+  climbS:{hip:[131,76],sh:[106,40],hand:[64,70]},
+  sprint:{hip:[127,76],sh:[90,52],hand:[56,70]},
+  recover:{hip:[130,76],sh:[114,38],hand:[70,70]},
+  stand:{hip:[108,54],sh:[92,12],hand:[62,70]},
+  climbT:{hip:[100,58],sh:[66,30],hand:[54,70]}
+};
+const CR={x:106,y:118},CRR=14;
+const pt=a=>({x:a[0],y:a[1]});
+function lerpPose(a,b,t){const o={};for(const k in a)o[k]=[a[k][0]+(b[k][0]-a[k][0])*t,a[k][1]+(b[k][1]-a[k][1])*t];return o}
+function ik(a,b,l1,l2,s){
+  const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||1,dd=clamp(d,Math.abs(l1-l2)+.5,l1+l2-.5),ux=dx/d,uy=dy/d;
+  const al=(l1*l1-l2*l2+dd*dd)/(2*dd),h=Math.sqrt(Math.max(0,l1*l1-al*al));
+  return {j:{x:a.x+ux*al-uy*h*s,y:a.y+uy*al+ux*h*s},e:{x:a.x+ux*dd,y:a.y+uy*dd}};
+}
+const f1=n=>(+n).toFixed(1);
+const pl=(pts,cls)=>`<polyline class="${cls}" points="${pts.map(p=>f1(p.x)+','+f1(p.y)).join(' ')}"/>`;
+function bikeSVG(){return `<circle class="fly" cx="62" cy="124" r="24"/><circle class="inkfill" cx="62" cy="124" r="4"/>
+<path class="frame" d="M34 166H166M56 166L76 112L72 74M124 116L142 166M76 112L124 116M124 116L128 88"/>
+<path class="bar" d="M74 72L50 68"/><path class="saddle" d="M114 85Q128 79 145 84"/>`}
+function headSVG(hx,hy){
+  return `<circle class="head" cx="${f1(hx)}" cy="${f1(hy)}" r="11"/>`+
+    `<path class="band" d="M${f1(hx-10)} ${f1(hy-4)}Q${f1(hx)} ${f1(hy-9)} ${f1(hx+10)} ${f1(hy-4)}L${f1(hx+21)} ${f1(hy-1)}M${f1(hx+10)} ${f1(hy-4)}L${f1(hx+19)} ${f1(hy+5)}"/>`+
+    `<circle class="inkfill" cx="${f1(hx-5)}" cy="${f1(hy+1)}" r="1.8"/>`;
+}
+function riderParts(p,ang){
+  const hip=pt(p.hip),sh=pt(p.sh),hand=pt(p.hand);
+  const fN={x:CR.x+CRR*Math.cos(ang),y:CR.y+CRR*Math.sin(ang)},fF={x:CR.x-CRR*Math.cos(ang),y:CR.y-CRR*Math.sin(ang)};
+  const lN=ik(hip,fN,40,40,1),lF=ik(hip,fF,40,40,1);
+  const hF={x:hand.x+6,y:hand.y-2},aN=ik(sh,hand,30,30,-1),aF=ik(sh,hF,30,30,-1);
+  const ux=sh.x-hip.x,uy=sh.y-hip.y,ul=Math.hypot(ux,uy),hx=sh.x+ux/ul*15,hy=sh.y+uy/ul*15;
+  const far=`<line class="crank far" x1="${CR.x}" y1="${CR.y}" x2="${f1(fF.x)}" y2="${f1(fF.y)}"/>`+pl([hip,lF.j,lF.e],'lim far')+pl([sh,aF.j,aF.e],'lim far');
+  const near=pl([hip,lN.j,lN.e],'lim')+`<line class="crank" x1="${CR.x}" y1="${CR.y}" x2="${f1(fN.x)}" y2="${f1(fN.y)}"/><circle class="inkfill" cx="${CR.x}" cy="${CR.y}" r="4"/>`+
+    `<line class="torso" x1="${f1(hip.x)}" y1="${f1(hip.y)}" x2="${f1(sh.x)}" y2="${f1(sh.y)}"/>`+pl([sh,aN.j,aN.e],'lim')+headSVG(hx,hy);
+  return {far,near,head:{x:hx,y:hy},knee:lN.j,foot:lN.e};
+}
+const FX={
+  speed:()=>[8,30,52,74,96].map((y,i)=>`<path class="fx" d="M${172+i%2*14} ${y}H238"/>`).join(''),
+  spin:()=>`<circle class="fxa dash" cx="${CR.x}" cy="${CR.y}" r="22"/><path class="fxa" d="M126 106l4 -6 3 7"/>`,
+  hill:()=>`<path class="tone" d="M-6 6L-6 172H246Z"/>`,
+  sweat:h=>`<path class="sweat" d="M${f1(h.x+16)} ${f1(h.y-14)}q4 6 0 9q-4 -3 0 -9z"/><path class="sweat" d="M${f1(h.x+22)} ${f1(h.y-2)}q3 5 0 7q-3 -2 0 -7z"/>`,
+  breath:h=>`<path class="fx" d="M${f1(h.x-16)} ${f1(h.y+4)}q-6 -4 -12 0q-6 4 -12 0M${f1(h.x-18)} ${f1(h.y+12)}q-5 -3 -10 0"/>`,
+  jump:n=>`<path class="fxa" d="M204 70V24M195 33l9 -11 9 11"/><path class="fxa" d="M224 24V70M215 61l9 11 9 -11"/><text class="anno" x="190" y="90">${T('{n}拍ずつ',{n})}</text>`,
+  sfx:(t,x,y,r)=>`<text class="sfx" x="${x}" y="${y}" transform="rotate(${r||-8} ${x} ${y})">${t}</text>`
+};
+function drawRide(type,o){
+  o=o||{};const kind=o.kind||KIND[type]||'seat',sfx=o.sfx===undefined?L(SFX[type]):o.sfx;
+  const ang=o.angle??.5;
+  const pose=kind==='jump'?lerpPose(POSES.seat,POSES.stand,o.blend??1):POSES[kind];
+  const r=riderParts(pose,ang);let back='',front='';
+  if(kind==='climbS'||kind==='climbT')back+=FX.hill();
+  if(!o.setup){
+    if(type==='sprint'||type==='spinup')front+=FX.speed();
+    if(['flat','tempo','spinup','sprint','warm','build'].includes(type))front+=FX.spin();
+    if(['sprint','climbT','climbT2','tempo','climbS','jump2'].includes(type))front+=FX.sweat(r.head);
+    if(kind==='recover')front+=FX.breath(r.head);
+    if(kind==='jump')front+=FX.jump(TYPES[type].beats||4);
+  }
+  let ghost='';
+  if(o.ghost){const g=riderParts(POSES.seat,ang+2);ghost=`<g opacity=".28">${g.far}${g.near}</g>`}
+  let anno='';
+  if(o.setup){
+    anno=`<path class="annoline" d="M136 80L150 50"/><text class="anno" x="140" y="44">${T('サドル=腰骨の高さ')}</text>`+
+      `<path class="annoline" d="M54 66L40 4"/><text class="anno" x="4" y="-4">${T('ハンドル=サドルと同じ〜少し上')}</text>`+
+      `<path class="annoline" d="M${f1(r.knee.x+4)} ${f1(r.knee.y+4)}L168 122"/><text class="anno" x="170" y="126">${T('一番下で膝が')}</text><text class="anno" x="170" y="139">${T('少し曲がる')}</text>`;
+  }
+  const sx=sfx&&sfx.length>5?100:150;
+  return back+r.far+bikeSVG()+ghost+r.near+front+anno+(sfx?FX.sfx(sfx,sx,8):'');
+}
+
+/* ================= drawing: off-bike figures (stretch, dismount) ================= */
+/* Frames: A = relaxed, B = deepest. W = working side, S = support side. Facing left, toward the bike. */
+const FIG={
+  quad:{A:{hip:[184,88],sh:[182,44],kS:[184,127],fS:[184,166],kW:[187,127],fW:[212,97],eS:[162,68],hS:[146,83],eW:[205,66],hW:[212,97]},
+        B:{hip:[184,88],sh:[182,44],kS:[184,127],fS:[184,166],kW:[190,126],fW:[203,90],eS:[162,68],hS:[146,83],eW:[201,63],hW:[203,90]},
+        footW:null,hl:'thighFrontW',arrow:'fW'},
+  calf:{A:{hip:[180,96],sh:[163,55],kS:[163,130],fS:[160,166],kW:[196,131],fW:[212,166],eS:[150,66],hS:[136,83],eW:[154,70],hW:[142,83]},
+        B:{hip:[174,100],sh:[157,60],kS:[156,132],fS:[160,166],kW:[193,133],fW:[212,166],eS:[145,72],hS:[136,83],eW:[148,75],hW:[142,83]},
+        hl:'calfW',arrow:'hip'},
+  ham:{A:{hip:[188,92],sh:[174,50],kW:[170,128],fW:[154,164],kS:[192,128],fS:[194,166],eW:[166,80],hW:[174,108],eS:[170,80],hS:[178,108]},
+       B:{hip:[194,96],sh:[164,66],kW:[174,130],fW:[154,164],kS:[196,130],fS:[196,166],eW:[158,94],hW:[166,122],eS:[162,94],hS:[170,122]},
+       footW:[-4,-9],hl:'thighBackW',arrow:'sh'},
+  glute:{A:{hip:[184,96],sh:[174,52],kS:[176,130],fS:[182,166],kW:[204,112],fW:[178,126],eS:[156,64],hS:[144,83],eW:[160,68],hW:[138,83]},
+         B:{hip:[192,108],sh:[174,62],kS:[170,136],fS:[182,166],kW:[212,120],fW:[172,134],eS:[158,70],hS:[144,83],eW:[162,74],hW:[138,83]},
+         footW:null,hl:'glute',arrow:'hip'},
+  back:{A:{hip:[192,90],sh:[160,74],kS:[192,128],fS:[192,166],kW:[196,128],fW:[198,166],eS:[139,76],hS:[118,82],eW:[141,78],hW:[120,82]},
+        B:{hip:[204,88],sh:[164,86],kS:[202,127],fS:[198,166],kW:[206,127],fW:[202,166],eS:[141,86],hS:[118,82],eW:[143,88],hW:[120,82]},
+        hl:'back',arrow:'hip'},
+  chest:{A:{hip:[182,88],sh:[180,44],kS:[180,127],fS:[178,166],kW:[184,127],fW:[184,166],eS:[186,68],hS:[192,90],eW:[188,68],hW:[194,90]},
+         B:{hip:[182,88],sh:[177,43],kS:[180,127],fS:[178,166],kW:[184,127],fW:[184,166],eS:[194,64],hS:[210,80],eW:[196,64],hW:[212,80]},
+         hl:'chest',arrow:'hW'},
+  off:{A:{hip:[176,92],sh:[174,48],kS:[176,129],fS:[178,166],kW:[158,104],fW:[150,134],eS:[160,64],hS:[146,83],eW:[188,66],hW:[192,86]},
+       B:{hip:[178,88],sh:[176,44],kS:[178,127],fS:[178,166],kW:[182,127],fW:[184,166],eS:[160,62],hS:[146,83],eW:[188,64],hW:[192,86]},
+       footW:null,arrow:'fW'}
+};
+function lerpFrame(A,Bf,b){const o={};for(const k in A)o[k]={x:A[k][0]+(Bf[k][0]-A[k][0])*b,y:A[k][1]+(Bf[k][1]-A[k][1])*b};return o}
+function hlSVG(kind,p){
+  const sh=(a,b,dx,dy)=>`<line class="hl" x1="${f1(a.x+dx)}" y1="${f1(a.y+dy)}" x2="${f1(b.x+dx)}" y2="${f1(b.y+dy)}"/>`;
+  switch(kind){
+    case 'thighFrontW':return sh(p.hip,p.kW,-5,0);
+    case 'calfW':return sh(p.kW,p.fW,4,-2);
+    case 'thighBackW':return sh(p.hip,p.kW,3,4);
+    case 'glute':return `<circle class="hlfill" cx="${f1(p.hip.x+7)}" cy="${f1(p.hip.y+3)}" r="10"/>`;
+    case 'back':return sh(p.hip,p.sh,0,-5);
+    case 'chest':return `<line class="hl" x1="${f1(p.sh.x-6)}" y1="${f1(p.sh.y+4)}" x2="${f1(p.sh.x-5)}" y2="${f1(p.sh.y+22)}"/>`;
+  }
+  return '';
+}
+function drawFig(id,b,side,o){
+  o=o||{};const F=FIG[id],p=lerpFrame(F.A,F.B,b);
+  const fv=(k,def)=>F[k]===null?null:(F[k]||def);
+  const foot=(f,v,cls)=>v?`<line class="${cls}" x1="${f1(f.x)}" y1="${f1(f.y)}" x2="${f1(f.x+v[0])}" y2="${f1(f.y+v[1])}"/>`:'';
+  const legW=pl([p.hip,p.kW,p.fW],'lim'),legS=pl([p.hip,p.kS,p.fS],'lim');
+  const armW=pl([p.sh,p.eW,p.hW],'lim'),armS=pl([p.sh,p.eS,p.hS],'lim');
+  const fW=fv('footW',[-9,0]),fS=fv('footS',[-9,0]);
+  const W={leg:legW+foot(p.fW,fW,'lim'),arm:armW},S={leg:legS+foot(p.fS,fS,'lim'),arm:armS};
+  const nearSet=side===2?S:W,farSet=side===2?W:S;
+  const farG=(farSet.leg+farSet.arm).replace(/class="lim"/g,'class="lim far"');
+  const ux=p.sh.x-p.hip.x,uy=p.sh.y-p.hip.y,ul=Math.hypot(ux,uy)||1,hx=p.sh.x+ux/ul*15,hy=p.sh.y+uy/ul*15;
+  let s=`<line class="ground" x1="20" y1="168" x2="232" y2="168"/><g opacity=".5">${bikeSVG()}</g>`+farG;
+  if(F.hl&&side!==2)s+=hlSVG(F.hl,p);
+  s+=nearSet.leg+`<line class="torso" x1="${f1(p.hip.x)}" y1="${f1(p.hip.y)}" x2="${f1(p.sh.x)}" y2="${f1(p.sh.y)}"/>`+nearSet.arm+headSVG(hx,hy);
+  if(F.hl&&side===2)s+=hlSVG(F.hl,p).replace('class="hl"','class="hl" opacity=".22"');
+  if(F.arrow&&!o.noArrow){const a=pt(F.A[F.arrow]),c=pt(F.B[F.arrow]),dx=c.x-a.x,dy=c.y-a.y,d=Math.hypot(dx,dy)||1,nx=-dy/d*12,ny=dx/d*12;
+    const x1=a.x+nx,y1=a.y+ny,x2=c.x+nx,y2=c.y+ny,ang=Math.atan2(y2-y1,x2-x1),hs=6;
+    s+=`<path class="fxa" d="M${f1(x1)} ${f1(y1)}L${f1(x2)} ${f1(y2)}M${f1(x2-hs*Math.cos(ang-.5))} ${f1(y2-hs*Math.sin(ang-.5))}L${f1(x2)} ${f1(y2)}L${f1(x2-hs*Math.cos(ang+.5))} ${f1(y2-hs*Math.sin(ang+.5))}"/>`}
+  if(o.sideLabel){s+=`<circle class="badge" cx="22" cy="-2" r="14"/><text class="badgetx" x="22" y="3" text-anchor="middle">${o.sideLabel}</text>`}
+  if(o.breath)s+=`<text class="breath" x="${o.sideLabel?42:8}" y="3">${o.breath}</text>`;
+  if(o.sfx)s+=FX.sfx(o.sfx,150,6,-6);
+  return s;
+}
+/* breathing envelope while holding a stretch: ease in over 3 s, then gentle 5 s breaths near full depth */
+function holdDepth(t){if(t<3){const k=t/3;return k*k*(3-2*k)}return .8+.2*(.5-.5*Math.cos((t-3)*Math.PI*2/5))}
+function breathWord(t){if(t<3)return T('吐きながら伸ばす');return Math.sin((t-3)*Math.PI*2/5)>=0?T('吐いて…'):T('吸って…')}
+const sideWord=side=>side===2?T('左'):T('右');
+
+/* ================= drawing: grip (top view) ================= */
+function handSVG(x,y,ang,mir,on){
+  return `<g transform="translate(${x} ${y}) rotate(${ang})"><ellipse class="palm${on?' on':''}" cx="0" cy="3" rx="11" ry="13"/>`+
+    [-7,-2.5,2.5,7].map((fx,i)=>`<line class="finger" x1="${fx}" y1="-7" x2="${fx}" y2="${i===0||i===3?-15:-18}"/>`).join('')+
+    `<line class="finger" x1="${mir*9}" y1="2" x2="${mir*16}" y2="-6"/></g>`;
+}
+const GRIP_HANDS={1:[[100,112,0,1],[140,112,0,-1]],2:[[52,100,-45,1],[188,100,45,-1]],3:[[44,46,-90,1],[196,46,90,-1]]};
+function gripSVG(pos,opt){
+  opt=opt||{};
+  let s=`<line class="hstem" x1="120" y1="114" x2="120" y2="156"/>`+
+    `<path class="hbar" d="M44 30V88Q44 112 70 112H170Q196 112 196 88V30"/>`;
+  if(opt.labels)s+=`<text class="fwd" x="120" y="22" text-anchor="middle">${T('↑ 前')}</text>`;
+  const show=opt.all?[1,2,3]:[pos];
+  show.forEach(g=>GRIP_HANDS[g].forEach(([x,y,a,m])=>{s+=handSVG(x,y,a,m,g===pos)}));
+  return s;
+}
+
+/* ================= how-to manga ================= */
+const HOW=[
+  {g:'before'},
+  {id:'setup',kind:'ride',type:'flat',setup:true,wide:true,angle:Math.PI/2,
+   t:{ja:'乗る前のセッティング',en:'Setting up the bike'},b:{ja:'まずはバイクを体に合わせよう!',en:'Fit the bike to your body first!'},
+   steps:{ja:['サドルの高さ:バイクの横に立ち、腰骨の高さに合わせる','膝の角度:ペダルが一番下のとき、膝が少し曲がる(25〜30°)','前後位置:ペダルを水平にしたとき、前の膝がペダル軸の真上にくる','ハンドル:サドルと同じ高さか少し上。初心者は高めが楽','足元:シューズを奥まで入れ、ストラップをしっかり締める'],
+          en:['Saddle height: stand beside the bike and set it level with your hip bone','Knee angle: at the bottom of the stroke your knee stays slightly bent (25–30°)','Fore-aft: with pedals level, your front knee sits over the pedal axle','Handlebar: level with the saddle or a little higher (higher is easier for beginners)','Feet: push your shoes all the way in and tighten the straps']},
+   ng:{ja:'サドルが低すぎて膝が窮屈になる',en:'A saddle set too low cramps your knees'}},
+  {id:'grip',kind:'grip',full:true,t:{ja:'ハンドルの握り方(上から見た図)',en:'Hand positions (seen from above)'},b:{ja:'握りしめず、手のひらで軽く支えよう',en:'Don\'t squeeze. Support yourself lightly with your palms.'},
+   ng:{ja:'ハンドルに体重を預け、肩と手首に力が入る',en:'Leaning your weight on the bars and tensing shoulders and wrists'}},
+  {g:'ride'},
+  {id:'seat',kind:'ride',type:'flat',b:{ja:'肩の力を抜いて、リズムよく回そう',en:'Relax your shoulders and find your rhythm'},ng:{ja:'上半身が左右に揺れる',en:'Rocking your upper body side to side'}},
+  {id:'stand',kind:'ride',type:'run',b:{ja:'腰はサドルの真上!',en:'Hips right over the saddle!'},ng:{ja:'負荷が軽すぎて足が空回りする',en:'Resistance so light your feet spin out'}},
+  {id:'climbS',kind:'ride',type:'climbS',b:{ja:'かかとを下げて、グッと踏み込む',en:'Heels down and drive the pedals'},ng:{ja:'重すぎて膝がガクガク揺れる',en:'So heavy your knees wobble'}},
+  {id:'climbT',kind:'ride',type:'climbT',b:{ja:'体重をペダルに乗せて一歩ずつ',en:'Weight into the pedals, one step at a time'},ng:{ja:'腕で体重を支えてしまう',en:'Holding your weight up with your arms'}},
+  {id:'climbT2',kind:'ride',type:'climbT2',b:{ja:'超重い坂!体重で一歩ずつ踏み下ろす',en:'A brutal hill! Drop your weight onto each stroke'},ng:{ja:'回転が落ちすぎて、膝だけで押し込む',en:'Letting cadence sink so low that your knees do all the work'}},
+  {id:'jump',kind:'ride',type:'jump',wide:true,ghost:true,b:{ja:'4拍で立つ、4拍で座る!',en:'Up for 4 beats, down for 4 beats!'},ng:{ja:'負荷が軽すぎて、立ったときに体がぶれる',en:'Resistance too light, so you wobble when standing'}},
+  {id:'jump2',kind:'ride',type:'jump2',ghost:true,b:{ja:'2拍で立つ、2拍で座る!素早く切り替え',en:'Up for 2, down for 2! Quick switches'},ng:{ja:'リズムに遅れて、立ち座りが中途半端になる',en:'Falling behind the beat so you never fully stand or sit'}},
+  {id:'sprint',kind:'ride',type:'sprint',b:{ja:'全力!でも上半身は静かに',en:'All out, but keep your upper body still'},ng:{ja:'お尻が跳ねたまま回し続ける',en:'Bouncing on the saddle as you spin'}},
+  {id:'recover',kind:'ride',type:'recover',b:{ja:'ふぅー。鼻から吸って口から吐く',en:'Phew. In through the nose, out through the mouth'},ng:{ja:'完全に止まる(脚はゆっくり回し続ける)',en:'Stopping completely (keep your legs turning slowly)'}},
+  {g:'after'},
+  {id:'off',kind:'fig',fig:'off',wide:true,t:{ja:'安全なバイクの降り方',en:'Getting off safely'},b:{ja:'あわてず、止まってから降りよう',en:'Take your time. Stop first, then get off.'},
+   steps:{ja:['ペダルをゆっくり止める(急に止めると脚が持っていかれる)','負荷を上げて、ペダルが回らないように固定する','ハンドルを持ったまま、片足ずつ床に下ろす','サドルの後ろへ脚を回して降り、サドルの横に立つ'],
+          en:['Slow the pedals gradually (a sudden stop can yank your legs)','Turn the resistance up so the pedals stay put','Keep hold of the bar and lower one foot at a time to the floor','Swing your leg back over the saddle and stand beside it']},
+   ng:{ja:'回っているペダルから足を外す',en:'Taking your feet off while the pedals are still turning'}},
+  ...STR_ORDER.map(id=>({id:'s-'+id,kind:'fig',fig:id,sid:id}))
+];
+const HOW_GROUPS={before:{ja:'乗る前に',en:'Before you ride'},ride:{ja:'乗り方',en:'Riding positions'},after:{ja:'降りてからのストレッチ',en:'Off the bike: stretches'}};
+const RIDE_HOW={warm:'seat',build:'seat',spinup:'seat',flat:'seat',tempo:'seat',cool:'recover',recover:'recover',run:'stand',climbS:'climbS',climbT:'climbT',climbT2:'climbT2',jump:'jump',jump2:'jump2',sprint:'sprint'};
+const anim=[];let animIO=null;
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function renderHow(){
+  let n=0;
+  const html=HOW.map(h=>{
+    if(h.g)return `<h3 class="grouph">${L(HOW_GROUPS[h.g])}</h3>`;
+    n++;
+    let title,bubble,body='',svg='';
+    if(h.kind==='ride'){const ty=TYPES[h.type];title=h.t?L(h.t):L(ty.n);bubble=L(h.b);
+      const steps=h.steps?L(h.steps):L(ty.steps);
+      body=`<ol>${steps.map(x=>`<li>${x}</li>`).join('')}</ol>`+(h.setup?'':`<p class="meta">${ty.adv?`<b>${T('上級メニュー')}</b> ・ `:''}${T('目安')}: ${ty.rpm[0]}–${ty.rpm[1]} rpm ・ ${T('負荷')} ${ty.res}/10 ・ ${L(GRIPS[ty.grip].n)}</p>`)+`<p class="ng">${L(h.ng)}</p>`;
+      svg=`<svg class="mg" viewBox="0 -20 240 200" role="img" aria-label="${title}" data-anim="${anim.length}"></svg>`;
+      anim.push({kind:'ride',h});
+    }else if(h.kind==='grip'){title=L(h.t);bubble=L(h.b);
+      body=`<div class="grips">${[1,2,3].map(g=>`<div class="grip"><svg class="mg" viewBox="20 10 200 150" role="img" aria-label="${L(GRIPS[g].n)}">${gripSVG(g,{labels:true})}</svg><strong>${L(GRIPS[g].n)}</strong><p>${L(GRIPS[g].how)}</p><p>${T('使う場面')}: ${L(GRIPS[g].use)}</p></div>`).join('')}</div><p class="tip">${T('親指はハンドルに軽くかけ、手首はまっすぐに保つ')}</p><p class="ng">${L(h.ng)}</p>`;
+    }else{
+      const s=h.sid?STR[h.sid]:null;title=s?L(s.n):L(h.t);bubble=s?L(s.cue):L(h.b);
+      const steps=s?L(s.steps):L(h.steps);
+      body=(s?`<p class="target">${T('伸びる場所')}: ${L(s.target)}</p>`:'')+`<ol>${steps.map(x=>`<li>${x}</li>`).join('')}</ol>`+
+        (s?`<p class="meta">${s.sides?T('左右それぞれ20〜30秒。反動をつけず、息を吐きながらじわっと伸ばす'):T('20〜30秒。反動をつけず、息を吐きながらじわっと伸ばす')}</p><p class="tip">${L(s.tip)}</p>`:`<p class="ng">${L(h.ng)}</p>`);
+      svg=`<svg class="mg" viewBox="0 -20 240 200" role="img" aria-label="${title}" data-anim="${anim.length}"></svg>`;
+      anim.push({kind:'fig',h});
+    }
+    return `<figure class="koma${h.full?' full':h.wide?' wide':''}" id="how-${h.id}"><div class="koma-title"><b>${n}</b>${title}</div><div class="bubble">${bubble}</div>${svg}<figcaption>${body}</figcaption></figure>`;
+  }).join('');
+  anim.length=0;
+  // rebuild registry in the same order the markup was produced
+  HOW.forEach(h=>{if(h.kind==='ride'||h.kind==='fig')anim.push({kind:h.kind,h,el:null,vis:false})});
+  $('#howPage').innerHTML=html;
+  document.querySelectorAll('#howPage svg[data-anim]').forEach((el,i)=>{anim[i].el=el;anim[i].vis=false;drawAnim(anim[i],0)});
+  if(animIO)animIO.disconnect();
+  if('IntersectionObserver' in window&&!REDUCED){
+    animIO=new IntersectionObserver(es=>es.forEach(e=>{const a=anim[+e.target.dataset.anim];if(a)a.vis=e.isIntersecting}));
+    anim.forEach(a=>animIO.observe(a.el));
+  }
+}
+function drawAnim(a,tm){
+  const h=a.h,t=tm/1000;
+  if(a.kind==='ride'){
+    if(h.setup){a.el.innerHTML=drawRide(h.type,{kind:'seat',setup:true,angle:Math.PI/2,sfx:''});return}
+    const o={angle:REDUCED?.5:.5-t*Math.PI*2*(58/60),ghost:h.ghost};
+    if(TYPES[h.type].jump){const pl=(TYPES[h.type].beats||4)*60/85,ph=Math.floor(t/pl)%2,fr=(t%pl)/pl,k=Math.min(1,fr/.25);o.blend=REDUCED?1:(ph===0?k:1-k)}
+    a.el.innerHTML=drawRide(h.type,o);
+  }else{
+    const id=h.fig,s=h.sid?STR[h.sid]:null;
+    if(REDUCED){a.el.innerHTML=drawFig(id,1,1,{sideLabel:s&&s.sides?sideWord(1):'',sfx:s?L(s.sfx):''});return}
+    if(id==='off'){const c=t%5,b=c<1?0:c<2.5?(c-1)/1.5:1;a.el.innerHTML=drawFig('off',b*b*(3-2*b),1,{});return}
+    const per=8,side=s.sides?(Math.floor(t/per)%2)+1:1,tt=t%per,b=.5-.5*Math.cos(tt*Math.PI*2/4);
+    const rising=Math.sin(tt*Math.PI*2/4)>=0;
+    a.el.innerHTML=drawFig(id,b,side,{sideLabel:s.sides?sideWord(side):'',breath:rising?T('吐いて…'):T('吸って…'),sfx:L(s.sfx)});
+  }
+}
+function showHow(s){
+  let id=s.type==='stretch'?'s-'+s.sid:(RIDE_HOW[s.type]||'seat');
+  if(st.waiting)id='off';
+  const el=document.getElementById('how-'+id);if(el)el.scrollIntoView({behavior:REDUCED?'auto':'smooth',block:'center'});
+}
+
+/* ================= stage (console picture) ================= */
+function renderStage(s,e){
+  if(!s)return;
+  if(st.waiting){const c=(performance.now()/1000)%5,b=c<1?0:c<2.5?(c-1)/1.5:1;$('#stage').innerHTML=drawFig('off',REDUCED?1:b*b*(3-2*b),1,{});return}
+  if(s.type==='stretch'){
+    const t=e!=null?e-s.start:0,half=s.dur/2,side=s.sides&&t>=half?2:1,tt=s.sides?(side===2?t-half:t):t;
+    const b=e==null||REDUCED?1:holdDepth(tt);
+    $('#stage').innerHTML=drawFig(s.sid,b,side,{sideLabel:s.sides?sideWord(side):'',breath:e!=null?breathWord(tt):'',sfx:L(STR[s.sid].sfx)});
+    return;
+  }
+  const o={};
+  if(e!=null){const t=e-s.start,m=mid(s);o.angle=.5-t*m/60*Math.PI*2;
+    if(s.jump){const pl=s.beats*60/m,ph=Math.floor(t/pl)%2,fr=(t%pl)/pl,k=Math.min(1,fr/.25);o.blend=ph===0?k:1-k}
+  }else{o.angle=.5;if(s.jump)o.blend=1}
+  $('#stage').innerHTML=drawRide(s.type,o);
+}
+function renderGripMini(s){
+  if(!s||s.type==='stretch'||st.waiting){$('#gripBox').hidden=true;return}
+  const g=TYPES[s.type].grip;$('#gripBox').hidden=false;
+  $('#gripMini').innerHTML=gripSVG(g,{});
+  $('#gripTxt').textContent=T('握り')+': '+L(GRIPS[g].n);
+}
+
+/* ================= calories & distance ================= */
+/* METs by zone (stationary cycling, Compendium of Physical Activities) */
+const MET=[2.3,4.0,6.8,8.8,11.0,14.0];
+const LVMUL={beg:.9,mid:1,adv:1.1};
+function kcalOf(s,sec){const m=s.z>=2?MET[s.z]*LVMUL[st.level]:MET[s.z];return 1.05*m*st.weight*sec/3600}
+function burned(e){let k=0;for(const s of st.segs){if(e<=s.start)break;k+=kcalOf(s,Math.min(s.dur,e-s.start))}return k}
+function planKcal(){return st.segs.reduce((k,s)=>k+kcalOf(s,s.dur),0)}
+/* distance: METs -> watts (ACSM cycle-ergometer equation), watts -> flat-road road-bike speed */
+function wattsOf(s){if(!s.z)return 0;const m=MET[s.z]*(s.z>=2?LVMUL[st.level]:1);return Math.max(20,(m*3.5-7)*st.weight/(1.8*6.12))}
+const spdCache={};
+function speedOf(W){const key=Math.round(W)+'|'+st.weight;if(spdCache[key])return spdCache[key];const M=st.weight+9,f=v=>.5*1.2*.32*v*v*v+.005*M*9.81*v-W*.97;let lo=0,hi=25;for(let i=0;i<40;i++){const md=(lo+hi)/2;f(md)>0?hi=md:lo=md}return spdCache[key]=lo*3.6}
+function kmOf(s,sec){return s.z?speedOf(wattsOf(s))*sec/3600:0}
+function distAt(e){let k=0;for(const s of st.segs){if(e<=s.start)break;k+=kmOf(s,Math.min(s.dur,e-s.start))}return k}
+function planKm(){return st.segs.reduce((k,s)=>k+kmOf(s,s.dur),0)}
+function updateKcal(e){
+  const cs=st.segs[segAt(e)];
+  $('#kmNow').textContent=distAt(e).toFixed(1);
+  $('#kmPlan').textContent=(st.running&&cs&&cs.z?T('いま 約{v}km/h',{v:Math.round(speedOf(wattsOf(cs)))})+' ・ ':'')+T('予定 約{v} km',{v:planKm().toFixed(1)});
+  $('#kcalNow').textContent=Math.round(burned(e));
+  $('#kcalPlan').textContent=T('予定 約{v} kcal(体重{w}kg)',{v:Math.round(planKcal()),w:st.weight});
+}
+
+/* ================= settings UI ================= */
+function renderSettings(){
+  $('#timeChips').innerHTML=TIMES.map(m=>`<button class="chip" data-t2="${m}" aria-pressed="${m===st.T}">${T('{m}分',{m})}</button>`).join('');
+  $('#customMin').value=TIMES.includes(st.T)?'':st.T;
+  $('#levelChips').innerHTML=Object.entries(LV).map(([k,v])=>`<button class="chip" data-l="${k}" aria-pressed="${k===st.level}">${L(v.n)}</button>`).join('');
+  $('#lvDesc').textContent=L(LV[st.level].d);
+  $('#songChips').innerHTML=Object.entries(SONGS).map(([k,v])=>`<button class="chip" data-song="${k}" aria-pressed="${k===st.song}">${L(v.n)}</button>`).join('');
+  $('#songDesc').textContent=L(SONGS[st.song].d);
+  $('#tVoice').checked=st.voice;$('#tCount').checked=st.count;$('#vol').value=st.vol;$('#weight').value=st.weight;
+  const lock=st.started&&!st.done;
+  document.querySelectorAll('#timeChips .chip,#levelChips .chip,#regen,#customMin').forEach(e=>e.disabled=lock);
+}
+$('#timeChips').addEventListener('click',e=>{const b=e.target.closest('[data-t2]');if(!b)return;st.T=+b.dataset.t2;rebuild()});
+$('#customMin').addEventListener('change',e=>{st.T=clamp(Math.round(+e.target.value||30),10,90);rebuild()});
+$('#levelChips').addEventListener('click',e=>{const b=e.target.closest('[data-l]');if(!b)return;st.level=b.dataset.l;rebuild()});
+$('#songChips').addEventListener('click',e=>{const b=e.target.closest('[data-song]');if(!b)return;st.song=b.dataset.song;renderSettings();save();paintBpm();if(!st.running)previewSong()});
+$('#regen').addEventListener('click',()=>{st.seed=Math.floor(Math.random()*1e9);rebuild()});
+$('#tVoice').addEventListener('change',e=>{st.voice=e.target.checked;if(!st.voice)try{speechSynthesis.cancel()}catch(_){};save()});
+$('#tCount').addEventListener('change',e=>{st.count=e.target.checked;save()});
+$('#weight').addEventListener('change',e=>{st.weight=clamp(+e.target.value||60,25,200);e.target.value=st.weight;renderMenu();updateKcal(st.started?elapsed():0);save()});
+$('#vol').addEventListener('input',e=>{st.vol=+e.target.value;if(master)master.gain.value=st.vol;save()});
+$('#langBtn').addEventListener('click',()=>{LANG=LANG==='ja'?'en':'ja';store.set('jibun.lang',LANG);try{speechSynthesis.cancel()}catch(e){};rerenderAll()});
+
+function rebuild(){generate();resetSession();renderSettings();renderMenu();renderProfile();save()}
+
+/* ================= menu & profile ================= */
+const zc=z=>`var(--z${z})`;
+function renderMenu(){
+  let h='',g=null;
+  st.segs.forEach((s,i)=>{
+    const bn=blockName(s);
+    if(bn!==g){g=bn;h+=`<tr class="grp"><td colspan="8">${g}</td></tr>`}
+    h+=`<tr data-i="${i}"><td class="num">${fmt(s.start)}</td><td><span class="zdot" style="background:${zc(s.z)}"></span><button class="howlink" data-i2="${i}">${segName(s)}</button></td><td>${segPos(s)}</td>`+
+       `<td class="num">${s.rpm?s.rpm[0]+'–'+s.rpm[1]:'–'}</td><td class="num">${s.res||'–'}</td><td class="num">${fmt(s.dur)}</td><td class="num">${Math.round(kcalOf(s,s.dur))}</td><td class="num">${s.z?kmOf(s,s.dur).toFixed(1):'–'}</td></tr>`;
+  });
+  $('#menu').innerHTML=h;markCur();
+}
+function markCur(){document.querySelectorAll('#menu tr.cur').forEach(r=>r.classList.remove('cur'));const row=document.querySelector(`#menu tr[data-i="${st.idx}"]`);if(row)row.classList.add('cur')}
+$('#menu').addEventListener('click',e=>{const b=e.target.closest('[data-i2]');if(b){const s=st.segs[+b.dataset.i2];const w=st.waiting;st.waiting=false;showHow(s);st.waiting=w}});
+$('#howBtn').addEventListener('click',()=>{const s=st.segs[Math.max(0,st.idx)];if(s)showHow(s)});
+function renderProfile(){
+  const W=1000,H=150,top=10,base=125,TT=st.total;let h='';
+  const step=TT>2400?600:TT>1200?300:120;
+  for(let t=0;t<=TT;t+=step){const x=t/TT*W;h+=`<line x1="${x}" x2="${x}" y1="${top}" y2="${base}" stroke="var(--line)" stroke-width="1"/>`;
+    h+=`<text x="${Math.min(x+3,W-40)}" y="${H-6}">${T('{m}分',{m:Math.round(t/60)})}</text>`}
+  st.segs.forEach(s=>{const x=s.start/TT*W,w=Math.max(1,s.dur/TT*W-1),hh=(s.z||0.5)*22,y=base-hh;
+    h+=`<rect x="${x.toFixed(1)}" y="${y}" width="${w.toFixed(1)}" height="${hh}" rx="1.5" fill="${zc(s.z)}"><title>${segName(s)} ${fmt(s.dur)}</title></rect>`});
+  h+=`<line x1="0" x2="${W}" y1="${base}" y2="${base}" stroke="var(--muted)" stroke-width="1"/>`;
+  h+=`<rect id="ph" x="0" y="${top-6}" width="3" height="${base-top+6}" fill="var(--ink)" opacity=".85"/>`;
+  $('#profile').innerHTML=h;
+}
+
+/* ================= audio engine ================= */
+let ctx=null,master=null,musicBus=null,noise=null,schedTimer=null,nextStep=0,segStep=0,gStep=0,schedSeg=-1;
+function initAudio(){
+  if(ctx)return;
+  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+  ctx=new AC();master=ctx.createGain();master.gain.value=st.vol;master.connect(ctx.destination);
+  musicBus=ctx.createGain();musicBus.gain.value=.85;musicBus.connect(master);
+  noise=ctx.createBuffer(1,ctx.sampleRate*.5,ctx.sampleRate);const d=noise.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+}
+const mf=n=>440*Math.pow(2,(n-69)/12);
+function envG(g,t,a,v,d){g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,v),t+a);g.gain.exponentialRampToValueAtTime(.0001,t+Math.max(a+.01,d))}
+function osc(type,f,t,d,v,dest,a,filt){const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(f,t);let n=o;
+  if(filt){const fl=ctx.createBiquadFilter();fl.type='lowpass';fl.frequency.setValueAtTime(filt,t);o.connect(fl);n=fl}
+  n.connect(g);g.connect(dest);envG(g,t,a||.005,v,d);o.start(t);o.stop(t+d+.05)}
+function kick(t,v){const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(42,t+.12);
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+.2);o.connect(g).connect(musicBus);o.start(t);o.stop(t+.22)}
+function nz(t,d,v,type,freq,q){const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();s.buffer=noise;f.type=type;f.frequency.value=freq;if(q)f.Q.value=q;
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);s.connect(f).connect(g).connect(musicBus);s.start(t);s.stop(t+d+.02)}
+function snare(t,v){nz(t,.16,v,'bandpass',1800,.8);osc('triangle',190,t,.08,v*.5,musicBus)}
+function hat(t,v,open){nz(t,open?.22:.045,v,'highpass',7500)}
+function bass(t,f,d,v){osc('sawtooth',f,t,d,v,musicBus,.005,650)}
+function pad(t,fs,d,v){fs.forEach(f=>osc('triangle',f,t,d,v,musicBus,.3))}
+function stab(t,fs,d,v){fs.forEach(f=>osc('square',f,t,d,v,musicBus,.005,1800))}
+function lead(t,f,d,v,type){osc(type||'triangle',f,t,d,v,musicBus,.005,type==='square'?2800:null)}
+function tone(t,fr,dur,v,type){osc(type||'sine',fr,t,dur,v,master,.01)}
+function chime(){if(!ctx)return;const t=ctx.currentTime+.02;tone(t,880,.25,.4);tone(t+.12,1320,.35,.35)}
+function blip(last){if(!ctx)return;tone(ctx.currentTime+.01,last?1175:660,.12,.35,'triangle')}
+const tri=q=>q==='m'?[0,3,7]:[0,4,7];
+const SONGS={
+  off:{n:{ja:'なし',en:'Off'},d:{ja:'音楽なし。合図の音と音声ガイドだけ鳴ります。',en:'No music. Only cue tones and voice guidance.'}},
+  beat:{n:{ja:'ビート',en:'Beat'},d:{ja:'キックとハイハットだけのシンプルなリズム。1拍=ペダル1回転です。',en:'A simple kick-and-hat rhythm. One beat equals one pedal turn.'},
+    root:48,prog:[[0,'M'],[5,'M'],[7,'M'],[5,'M']],
+    step(i,c,t,z){if(i%4===0)kick(t,i===0?1:.8);if(i%4===2)hat(t,z>=4?.28:.18);if(z>=5&&i%2===1)hat(t,.1)}},
+  marathon:{n:{ja:'マラソンBGM',en:'Marathon BGM'},d:{ja:'前向きなメロディの走りたくなる曲。強度が上がるほど楽器が増えます。',en:'An upbeat running track. More instruments join as the effort rises.'},
+    root:50,prog:[[0,'M'],[7,'M'],[9,'m'],[5,'M']],
+    step(i,c,t,z,sd){const r=c[0],tn=tri(c[1]);
+      if(i%4===0)kick(t,.95);
+      if(z>=2&&(i===4||i===12))snare(t,.32);
+      if(i%4===2)hat(t,.16,z>=4);else if(z>=3&&i%2===1)hat(t,.06);
+      if(i===0)bass(t,mf(this.root-12+r),sd*3,.2);
+      if(i%4===2)bass(t,mf(this.root+r),sd*1.6,.2);
+      if(i===0)pad(t,tn.map(x=>mf(this.root+12+r+x)),sd*16,z<=2?.045:.03);
+      if(z>=3&&(i===0||i===6||i===10))stab(t,tn.map(x=>mf(this.root+12+r+x)),sd*1.3,.035);
+      if(z>=4&&i%2===0){const pat=[0,1,2,3,2,1,2,3],k=pat[i/2],nn=k===3?12:tn[k];lead(t,mf(this.root+24+r+nn),sd*1.8,z>=5?.055:.045,z>=5?'square':'triangle')}}},
+  rock:{n:{ja:'ロック',en:'Rock'},d:{ja:'ドラムとギター風の音で押していく曲。坂道やスプリントで力が出ます。',en:'Drums and guitar-like chords that push you through hills and sprints.'},
+    root:40,prog:[[0,'m'],[8,'M'],[3,'M'],[10,'M']],
+    step(i,c,t,z,sd){const r=c[0];
+      if(i===0||i===8||(z>=3&&(i===6||i===10)))kick(t,.95);
+      if(i===4||i===12)snare(t,z>=2?.48:.3);
+      if(i%2===0)hat(t,.11,z>=5&&i%4===2);
+      if(i%2===0)bass(t,mf(this.root+r),sd*1.7,.2);
+      if(z>=2&&[0,3,6,10,12].includes(i))[0,7,12].forEach(x=>osc('sawtooth',mf(this.root+12+r+x),t,sd*1.8,.026,musicBus,.005,1400));
+      if(z>=4&&i%2===0){const pen=[0,3,5,7,10,12],pat=[5,4,3,2,3,4,3,1];lead(t,mf(this.root+24+pen[pat[i/2]]),sd*1.8,.04,'square')}}},
+  euro:{n:{ja:'ユーロ',en:'Euro'},d:{ja:'速いベースが刻むダンス曲。高回転のスプリントと相性がよい曲です。',en:'A dance track with a driving bassline. Great for fast sprints.'},
+    root:45,prog:[[0,'m'],[8,'M'],[3,'M'],[10,'M']],
+    step(i,c,t,z,sd){const r=c[0],tn=tri(c[1]);
+      if(i%4===0)kick(t,1);
+      if(z>=2&&(i===4||i===12))snare(t,.28);
+      if(i%4===2)hat(t,.14,z>=2);else if(z>=3)hat(t,.05);
+      if(z>=2)bass(t,mf(this.root-12+r+(i%2?12:0)),sd*.9,.17);else if(i%2===0)bass(t,mf(this.root-12+r),sd*1.6,.17);
+      if(z>=2&&i%4===2)stab(t,tn.map(x=>mf(this.root+12+r+x)),sd*.9,.035);
+      if(z>=4){const pat=[0,1,2,1],k=pat[i%4];lead(t,mf(this.root+24+r+tn[k]+(i>=8&&k===2?12:0)),sd*.9,.035,'square')}}}
+};
+/* calm music for the stretch block: slow pad + soft bell, from the chosen song's chords */
+function calmStep(song,i,c,t,sd){const r=c[0],tn=tri(c[1]),root=song.root||50;
+  if(i===0)pad(t,tn.map(x=>mf(root+12+r+x)),sd*16,.04);
+  if(i%4===0)osc('sine',mf(root+24+r+tn[(i/4)%3]+(i===12?12:0)),t,1.4,.025,musicBus,.01)}
+function scheduler(){
+  if(!ctx||!st.running)return;
+  const s=st.segs[st.idx];if(!s)return;
+  if(schedSeg!==st.idx){schedSeg=st.idx;segStep=0;nextStep=Math.max(nextStep,ctx.currentTime+.05)}
+  const bpm=s.rpm?mid(s):60,sd=60/bpm/4,song=SONGS[st.song];
+  while(nextStep<ctx.currentTime+.15){
+    const i=segStep%16,bar=Math.floor(gStep/16),t=nextStep;
+    if(song.step){const c=song.prog[bar%song.prog.length];
+      if(s.type==='stretch')calmStep(song,i,c,t,sd);else song.step(i,c,t,s.z,sd)}
+    if(s.jump&&segStep%(s.beats*4)===0){tone(t,(Math.floor(segStep/(s.beats*4))%2)?523:784,.18,.32,'square')}
+    if(s.rpm&&segStep%4===0){const bi=(segStep/4)%4;setTimeout(()=>flashBeat(bi),Math.max(0,(t-ctx.currentTime)*1000))}
+    nextStep+=sd;segStep++;gStep++;
+  }
+}
+function flashBeat(i){const els=$('#beat').children;for(let k=0;k<4;k++)els[k].classList.toggle('hit',k===i)}
+let previewT=null;
+function previewSong(){
+  initAudio();if(!ctx)return;if(ctx.state==='suspended')ctx.resume();
+  clearTimeout(previewT);const song=SONGS[st.song];if(!song.step)return;
+  const sd=60/88/4;let t=ctx.currentTime+.05;
+  for(let k=0;k<32;k++){song.step(k%16,song.prog[Math.floor(k/16)%song.prog.length],t,4,sd);t+=sd}
+}
+function duck(on){if(!musicBus||!ctx)return;musicBus.gain.setTargetAtTime(on?.3:.85,ctx.currentTime,.08)}
+
+/* ================= speech ================= */
+function speak(text){if(!st.voice)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=LANG==='en'?'en-US':'ja-JP';u.rate=1.05;u.volume=Math.min(1,st.vol+.2);
+  u.onstart=()=>duck(true);u.onend=u.onerror=()=>duck(false);speechSynthesis.speak(u)}catch(e){}}
+function announce(s){
+  if(s.type==='stretch'){speak(segName(s)+(LANG==='en'?'. ':'。')+(s.sides?T('まず右側から。'):'')+segCue(s));return}
+  let t=segName(s)+(LANG==='en'?'. ':'。');
+  t+=T('回転{r}前後、負荷{l}。',{r:mid(s),l:s.res});
+  t+=segCue(s);speak(t);
+}
+
+/* ================= session ================= */
+let wake=null;
+async function lockWake(){try{wake=await navigator.wakeLock.request('screen')}catch(e){wake=null}}
+function elapsed(){return st.acc+(st.running?(performance.now()-st.t0)/1000:0)}
+function segAt(e){for(let i=0;i<st.segs.length;i++){const s=st.segs[i];if(e<s.start+s.dur)return i}return st.segs.length}
+function start(){
+  initAudio();if(ctx&&ctx.state==='suspended')ctx.resume();clearTimeout(previewT);
+  if(st.done)resetSession();
+  const fromWait=st.waiting;
+  if(fromWait){st.waiting=false;st.stretchGo=true;$('#waitBox').hidden=true}
+  st.running=true;st.started=true;st.t0=performance.now();
+  if(ctx)nextStep=ctx.currentTime+.05;
+  if(!schedTimer)schedTimer=setInterval(scheduler,25);
+  lockWake();renderSettings();updateButtons();
+  if(st.idx<0){st.idx=0;onSegChange()}
+  else if(fromWait)onSegChange();
+}
+function pause(){st.acc=elapsed();st.running=false;try{speechSynthesis.cancel()}catch(e){};try{wake&&wake.release()}catch(e){};updateButtons()}
+function enterWait(i){
+  const s=st.segs[i];st.acc=s.start;st.running=false;st.waiting=true;st.idx=i;markCur();
+  chime();speak(T('クールダウン終了です。ペダルをゆっくり止めて、バイクから降りてください。準備ができたら、ストレッチ開始ボタンを押してください。'));
+  paintWait();updateButtons();
+}
+function resetSession(){
+  st.running=false;st.started=false;st.done=false;st.waiting=false;st.stretchGo=false;st.acc=0;st.idx=-1;st.lastSec=null;st.said10=-1;st.sideSaid=-1;schedSeg=-1;
+  try{speechSynthesis.cancel()}catch(e){};try{wake&&wake.release()}catch(e){}
+  $('#waitBox').hidden=true;updateButtons();renderSettings();paintIdle();markCur();
+}
+function skip(){const s=st.segs[st.idx];if(!s||st.waiting)return;st.acc=s.start+s.dur;if(st.running)st.t0=performance.now()}
+$('#play').addEventListener('click',()=>st.running?pause():start());
+$('#skip').addEventListener('click',skip);
+$('#reset').addEventListener('click',()=>{if(st.started&&!st.done){const e=elapsed();if(e>=60)saveRecord(e,false)}resetSession();renderMenu()});
+document.addEventListener('keydown',e=>{if(e.code==='Space'&&e.target===document.body){e.preventDefault();$('#play').click()}});
+
+function updateButtons(){
+  const p=$('#play');
+  p.textContent=st.running?T('一時停止'):st.waiting?T('ストレッチ開始'):st.done?T('もう一度'):st.started?T('再開'):T('スタート');
+  p.classList.toggle('go',st.waiting);
+  $('#skip').disabled=!st.started||st.done||st.waiting;$('#reset').disabled=!st.started;
+}
+function onSegChange(){
+  const s=st.segs[st.idx];st.said10=-1;st.sideSaid=-1;markCur();
+  if(!s)return;
+  chime();announce(s);paintSeg(s);
+}
+function paintSteps(list){$('#steps').innerHTML=list.map(x=>`<li>${x}</li>`).join('')}
+function paintBpm(){
+  const s=st.segs[Math.max(0,st.idx)],song=SONGS[st.song];
+  if(!s){$('#bpmTxt').textContent='';return}
+  $('#bpmTxt').textContent=song.step?`♪ ${L(song.n)} ・ ${s.rpm?mid(s):60} BPM`:'';
+}
+function paintSeg(s){
+  $('#pill').textContent=s.z===0?T('ストレッチ'):'Z'+s.z;$('#pill').style.background=zc(s.z);
+  $('#blockName').textContent=blockName(s);
+  $('#segName').textContent=segName(s);$('#cue').textContent=segCue(s);
+  paintSteps(segSteps(s));renderStage(s);renderGripMini(s);
+  if(s.type==='stretch'){
+    $('#rpm').textContent='–';$('#rpmRange').textContent=T('ストレッチ中');
+    $('#pos').textContent=s.sides?T('右側'):L(POS.off);$('#resTxt').textContent=T('伸びる場所')+': '+L(STR[s.sid].target);$('#pips').innerHTML='';
+    $('#segLen').textContent=s.sides?T('片側 {s}秒',{s:s.dur/2}):T('{s}秒',{s:s.dur});
+  }else{
+    $('#rpm').textContent=mid(s);$('#rpmRange').textContent=T('目標 {a}–{b}',{a:s.rpm[0],b:s.rpm[1]});
+    $('#pos').textContent=segPos(s);$('#resTxt').textContent=T('負荷 {r} / 10',{r:s.res});
+    $('#pips').innerHTML=Array.from({length:10},(_,i)=>`<i class="${i<s.res?'on':''}"></i>`).join('');
+    $('#segLen').textContent=T('この区間 {t}',{t:fmt(s.dur)});
+  }
+  paintBpm();
+  const n=st.segs[st.idx+1];
+  if(!n)$('#next').textContent=T('これが最後の区間です');
+  else if(n.type==='stretch'&&s.type!=='stretch')$('#next').innerHTML=T('次は <strong>バイクを降りてストレッチ</strong>(「ストレッチ開始」を押すまで待ちます)');
+  else $('#next').innerHTML=T('次は <strong>{n}</strong>',{n:segName(n)})+(n.rpm?`(${segPos(n)} / ${n.rpm[0]}–${n.rpm[1]}rpm / ${T('負荷')}${sp()}${n.res})`:'');
+}
+const sp=()=>LANG==='en'?' ':'';
+function paintWait(){
+  const s=st.segs[st.idx];
+  $('#pill').textContent=T('降車');$('#pill').style.background='var(--accent)';
+  $('#blockName').textContent=T('降りてストレッチ');
+  $('#segName').textContent=T('バイクから降りましょう');$('#cue').textContent=T('あわてずに。止まってから降りよう');
+  $('#steps').innerHTML='';$('#waitBox').hidden=false;
+  $('#rpm').textContent='–';$('#rpmRange').textContent='';$('#bpmTxt').textContent='';
+  $('#pos').textContent=L(POS.off);$('#resTxt').textContent='';$('#pips').innerHTML='';
+  $('#segLeft').textContent=fmt(s.sides?s.dur/2:s.dur);$('#segLen').textContent=T('タイマー停止中');
+  $('#next').innerHTML=T('次は <strong>{n}</strong>',{n:segName(s)});updateKcal(st.acc);
+  renderStage(s);renderGripMini(s);
+  for(const b of $('#beat').children)b.classList.remove('hit');
+}
+function paintIdle(){
+  const s=st.segs[0];if(!s)return;
+  paintSeg(s);$('#pill').textContent=T('準備');$('#pill').style.background='var(--muted)';
+  $('#segName').textContent=T('{m}分・{l}メニュー',{m:st.T,l:L(LV[st.level].n)});
+  $('#cue').textContent=T('バイクに乗り、サドルの高さを確認したらスタートを押してください。');
+  paintSteps([T('最初にサドルとハンドルの高さを確認(下の「乗る前のセッティング」参照)'),T('飲み物とタオルを手の届く所に置く'),T('音楽と音声ガイドを使うときは、音量を確認する')]);
+  $('#segLeft').textContent=fmt(s.dur);
+  $('#elapsed').textContent='0:00';$('#total').textContent=fmt(st.total);$('#prog').style.width='0%';updateKcal(0);
+  $('#next').innerHTML=T('最初は <strong>{n}</strong>',{n:segName(s)})+`(${s.rpm[0]}–${s.rpm[1]}rpm / ${T('負荷')}${sp()}${s.res})`;
+  const ph=$('#ph');if(ph)ph.setAttribute('x',0);
+  for(const b of $('#beat').children)b.classList.remove('hit');
+}
+function finish(){
+  st.running=false;st.done=true;st.acc=st.total;saveRecord(st.total,true);
+  try{wake&&wake.release()}catch(e){}
+  chime();speak(T('おつかれさまでした。消費カロリーは約{k}キロカロリー、走行距離は約{d}キロメートルです。水分をとって休みましょう。',{k:Math.round(planKcal()),d:planKm().toFixed(1)}));
+  paintDone();updateButtons();renderSettings();
+}
+function paintDone(){
+  $('#pill').textContent=T('完了');$('#pill').style.background='var(--accent)';$('#blockName').textContent='';
+  $('#segName').textContent=T('おつかれさまでした');
+  $('#cue').textContent=T('{m}分のトレーニングを完了しました。消費カロリーは約{k}kcal、推定走行距離は約{d}kmです。水分をとって休みましょう。',{m:st.T,k:Math.round(planKcal()),d:planKm().toFixed(1)});
+  paintSteps([]);$('#segLeft').textContent='0:00';$('#next').textContent='';updateKcal(st.total);
+}
+function loop(now){
+  if(st.running){
+    const e=elapsed();
+    if(e>=st.total){finish()}
+    else{
+      const i=segAt(e),s=st.segs[i];
+      if(s.type==='stretch'&&!st.stretchGo){enterWait(i)}
+      else{
+        if(i!==st.idx){st.idx=i;onSegChange()}
+        const t=e-s.start,half=s.dur/2,side=s.type==='stretch'&&s.sides&&t>=half?2:1;
+        const left=(s.type==='stretch'&&s.sides&&side===1)?half-t:s.start+s.dur-e,sec=Math.ceil(left);
+        $('#segLeft').textContent=fmt(sec);
+        if(s.type==='stretch'&&s.sides&&side===2&&st.sideSaid!==st.idx){st.sideSaid=st.idx;chime();speak(T('反対側に替えます。左側をゆっくり伸ばします。'));$('#pos').textContent=T('左側')}
+        if(sec!==st.lastSec){st.lastSec=sec;
+          if(st.count&&sec<=3&&sec>=1)blip(sec===1);
+          if(sec===10&&st.said10!==st.idx&&s.dur>=25&&s.type!=='stretch'){st.said10=st.idx;const n=st.segs[i+1];
+            if(n&&n.type==='stretch')speak(T('あと10秒でクールダウン終了です。ペダルを止める準備をしましょう。'));
+            else if(n)speak(T('あと10秒。次は{n}。',{n:segName(n)}))}
+        }
+        if(s.jump){const ph=Math.floor(t/(s.beats*60/mid(s)))%2;$('#pos').textContent=ph?T('座る'):T('立つ')}
+        $('#elapsed').textContent=fmt(e);updateKcal(e);$('#prog').style.width=(e/st.total*100)+'%';
+        const p=$('#ph');if(p)p.setAttribute('x',(e/st.total*1000-1.5).toFixed(1));
+        renderStage(s,e);
+      }
+    }
+  }else if(st.waiting){renderStage(st.segs[st.idx])}
+  if(!REDUCED&&now-lastHow>40){lastHow=now;for(const a of anim)if(a.vis&&a.el)drawAnim(a,now)}
+  requestAnimationFrame(loop);
+}
+let lastHow=0;
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&(st.running||st.waiting))lockWake()});
+
+/* ================= training log ================= */
+function readLog(){
+  let o=null;try{o=JSON.parse(store.get('spin.logs')||'null')}catch(e){}
+  if(!o){let old=[];try{old=JSON.parse(store.get('soloSpinLog')||'[]')}catch(e){}o={version:1,records:Array.isArray(old)?old:[],deleted:[]}}
+  o.records=o.records||[];o.deleted=o.deleted||[];return o;
+}
+function writeLog(o){return store.set('spin.logs',JSON.stringify(o))}
+const lg={recs:[],shown:20};
+function refreshLog(){lg.recs=readLog().records.slice().sort((x,y)=>y.ts-x.ts);renderLog()}
+function toast(msg){let t=document.querySelector('.toast');if(!t){t=document.createElement('div');t.className='toast';t.setAttribute('role','status');document.body.appendChild(t)}t.textContent=msg;t.hidden=false;clearTimeout(t._h);t._h=setTimeout(()=>t.hidden=true,2600)}
+function saveRecord(sec,completed){
+  const ts=Date.now();
+  const rec={id:'r'+ts,ts,plannedMin:st.T,level:st.level,sec:Math.round(sec),kcal:Math.round(burned(sec)),km:Math.round(distAt(sec)*10)/10,weight:st.weight,completed};
+  const o=readLog();o.records.push(rec);
+  const ok=writeLog(o);refreshLog();
+  toast(!ok?T('この端末に保存できませんでした(プライベートモードでは保存されません)'):completed?T('記録しました'):T('途中までの記録を残しました'));
+  dbxSync();
+}
+function deleteRecord(id){const o=readLog();o.records=o.records.filter(r=>r.id!==id);o.deleted.push(id);writeLog(o);refreshLog();dbxSync()}
+function renderLog(){
+  const recs=lg.recs,now=new Date();
+  const wk=new Date(now.getFullYear(),now.getMonth(),now.getDate()-((now.getDay()+6)%7)).getTime();
+  const w=recs.filter(r=>r.ts>=wk),sum=(a,k)=>a.reduce((s,r)=>s+(+r[k]||0),0);
+  $('#wkCount').textContent=T('{n}回',{n:w.length});$('#wkTime').textContent=T('合計 {m}分',{m:Math.round(sum(w,'sec')/60)});
+  $('#wkKcal').textContent=Math.round(sum(w,'kcal'));$('#wkKm').textContent=sum(w,'km').toFixed(1);
+  $('#allCount').textContent=T('{n}回',{n:recs.length});$('#allSub').textContent=`${Math.round(sum(recs,'kcal'))} kcal ・ ${sum(recs,'km').toFixed(1)} km`;
+  const DOW=LANG==='en'?['Sun','Mon','Tue','Wed','Thu','Fri','Sat']:['日','月','火','水','木','金','土'];
+  const dk=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+  const days=[];for(let i=6;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i);days.push({d,k:dk(d),kcal:0})}
+  recs.forEach(r=>{const x=days.find(d=>d.k===dk(new Date(r.ts)));if(x)x.kcal+=+r.kcal||0});
+  const mx=Math.max(100,...days.map(d=>d.kcal)),top=18,base=118,bw=30,gap=(340-7*bw)/8;
+  let h=`<text x="0" y="11">${T('直近7日間の消費カロリー')}</text><line x1="0" x2="340" y1="${base}" y2="${base}" stroke="var(--line)"/>`;
+  days.forEach((d,i)=>{const x=gap+i*(bw+gap),hh=d.kcal/mx*(base-top-14),today=i===6;
+    if(d.kcal>0)h+=`<rect x="${x}" y="${(base-hh).toFixed(1)}" width="${bw}" height="${hh.toFixed(1)}" rx="3" fill="${today?'var(--accent)':'var(--z2)'}"/><text class="lbl" x="${x+bw/2}" y="${(base-hh-4).toFixed(1)}" text-anchor="middle">${Math.round(d.kcal)}</text>`;
+    h+=`<text x="${x+bw/2}" y="${base+16}" text-anchor="middle">${today?T('今日'):DOW[d.d.getDay()]}</text><text x="${x+bw/2}" y="${base+29}" text-anchor="middle">${d.d.getMonth()+1}/${d.d.getDate()}</text>`});
+  $('#week').innerHTML=h;
+  if(!recs.length){$('#logList').innerHTML=`<li class="empty" style="display:block">${T('まだ記録はありません。トレーニングを最後まで終えるか、1分以上漕いでからリセットすると、ここに残ります。')}</li>`;$('#logMore').hidden=true;return}
+  $('#logList').innerHTML=recs.slice(0,lg.shown).map(r=>{const d=new Date(r.ts);
+    const date=LANG==='en'?`${DOW[d.getDay()]} ${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`:`${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}(${DOW[d.getDay()]})`;
+    return `<li><div><div class="when">${date} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</div>
+      <div class="what">${T('{m}分',{m:Math.round(r.sec/60)})}・${L((LV[r.level]||LV.mid).n)}<span class="tag ${r.completed?'ok':'part'}">${r.completed?T('完走'):T('途中まで')}</span></div></div>
+      <div class="nums">${Math.round(r.kcal)} kcal<br>${(+r.km).toFixed(1)} km</div>
+      <button class="del" data-del="${r.id}">${T('削除')}</button></li>`}).join('');
+  $('#logMore').hidden=recs.length<=lg.shown;
+  renderDbx();
+}
+$('#logMore').addEventListener('click',()=>{lg.shown+=20;renderLog()});
+$('#logList').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(!b)return;
+  if(b.classList.contains('arm')){deleteRecord(b.dataset.del);return}
+  b.classList.add('arm');b.textContent=T('本当に削除');setTimeout(()=>{if(b.isConnected){b.classList.remove('arm');b.textContent=T('削除')}},4000)});
+
+/* ================= Dropbox sync ================= */
+const IN_FRAME=(()=>{try{return window.self!==window.top}catch(e){return true}})();
+const DBX_OK=!!DROPBOX_APP_KEY&&!IN_FRAME&&(location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1');
+const dbx={busy:null,status:'',last:0};
+const dbxTok=()=>{try{return JSON.parse(store.get('spin.dbx')||'null')}catch(e){return null}};
+const dbxSetTok=t=>t?store.set('spin.dbx',JSON.stringify(t)):store.del('spin.dbx');
+const redirectUri=()=>location.origin+location.pathname;
+const b64url=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+async function dbxConnect(){
+  const v=b64url(crypto.getRandomValues(new Uint8Array(48)));
+  try{sessionStorage.setItem('spin.pkce',v)}catch(e){}
+  const ch=b64url(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)));
+  const u=new URL('https://www.dropbox.com/oauth2/authorize');
+  u.search=new URLSearchParams({client_id:DROPBOX_APP_KEY,response_type:'code',code_challenge:ch,code_challenge_method:'S256',token_access_type:'offline',redirect_uri:redirectUri()}).toString();
+  location.href=u.toString();
+}
+async function dbxHandleRedirect(){
+  const q=new URLSearchParams(location.search),code=q.get('code');
+  if(!code&&!q.get('error'))return;
+  history.replaceState(null,'',redirectUri()+location.hash);
+  if(!code){toast(T('Dropboxへの接続をキャンセルしました'));return}
+  let v=null;try{v=sessionStorage.getItem('spin.pkce');sessionStorage.removeItem('spin.pkce')}catch(e){}
+  if(!v)return;
+  const r=await fetch('https://api.dropboxapi.com/oauth2/token',{method:'POST',body:new URLSearchParams({code,grant_type:'authorization_code',code_verifier:v,client_id:DROPBOX_APP_KEY,redirect_uri:redirectUri()})});
+  if(!r.ok)throw new Error('token');
+  const j=await r.json();dbxSetTok({access:j.access_token,refresh:j.refresh_token,exp:Date.now()+(j.expires_in-60)*1000});
+  toast(T('Dropboxに接続しました'));
+}
+async function dbxAccess(){
+  const t=dbxTok();if(!t)return null;
+  if(t.access&&Date.now()<t.exp)return t.access;
+  const r=await fetch('https://api.dropboxapi.com/oauth2/token',{method:'POST',body:new URLSearchParams({grant_type:'refresh_token',refresh_token:t.refresh,client_id:DROPBOX_APP_KEY})});
+  if(!r.ok){if(r.status===400||r.status===401)dbxSetTok(null);throw new Error('refresh')}
+  const j=await r.json();t.access=j.access_token;t.exp=Date.now()+(j.expires_in-60)*1000;dbxSetTok(t);return t.access;
+}
+async function dbxDownload(tok){
+  const r=await fetch('https://content.dropboxapi.com/2/files/download',{method:'POST',headers:{Authorization:'Bearer '+tok,'Dropbox-API-Arg':JSON.stringify({path:DBX_PATH})}});
+  if(r.status===409)return {records:[],deleted:[]};
+  if(!r.ok)throw new Error('download '+r.status);
+  try{const j=await r.json();return {records:j.records||[],deleted:j.deleted||[]}}catch(e){return {records:[],deleted:[]}}
+}
+async function dbxUpload(tok,data){
+  const r=await fetch('https://content.dropboxapi.com/2/files/upload',{method:'POST',headers:{Authorization:'Bearer '+tok,'Dropbox-API-Arg':JSON.stringify({path:DBX_PATH,mode:'overwrite',mute:true}),'Content-Type':'application/octet-stream'},body:JSON.stringify(data)});
+  if(!r.ok)throw new Error('upload '+r.status);
+}
+function dbxSync(){
+  if(!DBX_OK||!dbxTok())return Promise.resolve();
+  if(dbx.busy)return dbx.busy;
+  dbx.status='sync';renderDbx();
+  dbx.busy=(async()=>{
+    try{
+      const tok=await dbxAccess();if(!tok){dbx.status='';return}
+      const remote=await dbxDownload(tok),local=readLog();
+      const del=new Set([...local.deleted,...remote.deleted]),map=new Map();
+      [...remote.records,...local.records].forEach(r=>{if(r&&r.id&&!del.has(r.id))map.set(r.id,r)});
+      const merged={version:1,app:'solo-spin',records:[...map.values()].sort((a,b)=>a.ts-b.ts),deleted:[...del].slice(-500),updated:new Date().toISOString()};
+      writeLog(merged);refreshLog();
+      const rIds=new Set(remote.records.map(r=>r.id));
+      const need=merged.records.length!==remote.records.length||merged.records.some(r=>!rIds.has(r.id))||merged.deleted.length!==remote.deleted.length;
+      if(need)await dbxUpload(tok,merged);
+      dbx.status='ok';dbx.last=Date.now();
+    }catch(e){dbx.status='err'}
+    finally{dbx.busy=null;renderDbx()}
+  })();
+  return dbx.busy;
+}
+function renderDbx(){
+  const row=$('#dbxRow');
+  if(!DBX_OK){row.hidden=true;$('#logStatus').textContent=T('このスマートフォン(ブラウザ)に保存しています');return}
+  row.hidden=false;const on=!!dbxTok();
+  const tm=dbx.last?new Date(dbx.last).toTimeString().slice(0,5):'';
+  $('#dbxStatus').textContent=!on?T('Dropboxにログインすると、記録をDropboxにも保存できます'):
+    dbx.status==='sync'?T('Dropboxと同期しています…'):dbx.status==='err'?T('Dropboxに接続できませんでした。記録はこの端末に保存しています'):
+    dbx.status==='ok'?T('Dropboxに保存済み({t})',{t:tm}):T('Dropboxに接続しています');
+  $('#dbxBtn').textContent=on?T('接続を解除'):T('Dropboxに接続');
+  $('#dbxSync').hidden=!on;
+  $('#logStatus').textContent=on?T('この端末とDropboxに保存しています'):T('このスマートフォン(ブラウザ)に保存しています');
+}
+$('#dbxBtn').addEventListener('click',async()=>{
+  if(dbxTok()){const t=dbxTok();dbxSetTok(null);dbx.status='';renderDbx();toast(T('Dropboxとの接続を解除しました'));
+    try{if(t&&t.access)fetch('https://api.dropboxapi.com/2/auth/token/revoke',{method:'POST',headers:{Authorization:'Bearer '+t.access}})}catch(e){}}
+  else dbxConnect().catch(()=>toast(T('Dropboxに接続できませんでした。時間をおいてもう一度お試しください')));
+});
+$('#dbxSync').addEventListener('click',()=>dbxSync());
+
+/* ================= re-render on language change ================= */
+function rerenderAll(){
+  applyStatic();renderSettings();renderMenu();renderProfile();renderHow();refreshLog();renderDbx();
+  if(st.waiting)paintWait();
+  else if(st.done)paintDone();
+  else if(st.started&&st.idx>=0){paintSeg(st.segs[st.idx]);if(!st.running)updateKcal(elapsed())}
+  else paintIdle();
+  updateButtons();
+}
+
+/* ================= boot ================= */
+applyStatic();generate();renderSettings();renderMenu();renderProfile();renderHow();resetSession();refreshLog();renderDbx();
+requestAnimationFrame(loop);
+if(DBX_OK){dbxHandleRedirect().catch(()=>toast(T('Dropboxに接続できませんでした。時間をおいてもう一度お試しください'))).finally(()=>{renderDbx();dbxSync()})}
+})();
+</script>
+
+</body>
+</html>
